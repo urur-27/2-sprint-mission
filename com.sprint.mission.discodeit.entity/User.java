@@ -12,11 +12,11 @@ public class User extends BaseEntity {
     }
 
     // Getter 메서드
-    public String getusername() {
+    public String getUsername() {
         return username;
     }
 
-    public String getemail() {
+    public String getEmail() {
         return email;
     }
 
