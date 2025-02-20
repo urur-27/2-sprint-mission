@@ -1,4 +1,5 @@
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
@@ -63,9 +64,9 @@ public class Main {
             System.out.println("1. Register User");
             System.out.println("2. Search User");
             System.out.println("3. Search All User");
-            System.out.println("3. Update User");
-            System.out.println("4. Delete User");
-            System.out.println("5. Back to Main Menu");
+            System.out.println("4. Update User");
+            System.out.println("5. Delete User");
+            System.out.println("6. Back to Main Menu");
             System.out.print("Choice: ");
 
             int choice = sc.nextInt();
@@ -184,26 +185,63 @@ public class Main {
                         System.out.println("[Info] Sender: "+sender.getUsername());
                         System.out.println("[Info] Message content: "+content);
                     } else {
-                        System.out.println("[Error] Sender or Channel not found.");
+                        System.out.println("[Error] Sender or Channel not found."); // 유저 이름이나 채널명이 없는 경우 예외처리
                     }
                     break;
 
                 case 2: // 메시지 조회. 채널, 작성자를 검색하여 조회 가능하도록 설계(추가해야함)
                     //모든 메시지 출력
-                    messageService.getAllMessages().forEach(msg ->
-                            System.out.println(msg.getSender().getUsername() + ": " + msg.getContent()));
+                    List<Message> messages = messageService.getAllMessages(); // 메시지에 인덱스 번호를 입력해주기 위해
+
+                    if (messages.isEmpty()) {
+                        System.out.println("[Info] No messages found."); // 메시지가 없는 경우
+                    } else {
+                        System.out.println("\n=== Message List ===");
+                        for (int i = 0; i < messages.size(); i++) {
+                            Message msg = messages.get(i);
+                            System.out.println(i + 1 + ". [" + msg.getSender().getUsername() + "] " + msg.getContent());
+                        }
+                    }
                     break;
 
-                case 3: // 메시지 삭제. 채널, 작성자를 기준으로 메시지 삭제할 수 있도록 (수정해야함)
-                    System.out.print("Enter Message Content to delete: ");
-                    String messageContent = sc.nextLine();
-                    messageService.getAllMessages().stream()
-                            .filter(msg -> msg.getContent().equalsIgnoreCase(messageContent))
-                            .findFirst()
-                            .ifPresent(msg -> {
-                                messageService.deleteMessage(msg.getId());
-                                System.out.println("[Info] Message deleted successfully.");
-                            });
+                case 3: // 메시지 삭제. 어느 채널에 작성된 메시지인지 보여주고 선택하여 삭제
+                    messages = messageService.getAllMessages(); // 모든 메시지를 저장
+
+                    if (messages.isEmpty()) {
+                        System.out.println("[Info] There is no message");
+                        break;
+                    }
+
+                    // 메시지에 번호를 붙여서 출력
+                    System.out.println("\n=== Select a Message to Delete ===");
+                    for (int i = 0; i < messages.size(); i++) {
+                        Message msg = messages.get(i);
+                        System.out.println(i + 1 + ". [" + msg.getSender().getUsername() + "] " + msg.getContent());
+                    }
+
+                    System.out.print("Enter the message number to delete: ");
+                    int deleteIndex = sc.nextInt();
+                    sc.nextLine();
+
+                    if (deleteIndex < 1 || deleteIndex > messages.size()) {
+                        System.out.println("[Error] Invalid message number.");
+                    } else {
+                        Message toDelete = messages.get(deleteIndex - 1);
+                        messageService.deleteMessage(toDelete.getId());
+                        System.out.println("[Info] Message deleted successfully.");
+                    }
+
+//                    messageService.getAllMessages().forEach(msg ->System.out.println(msg.getSender().getUsername() + ": " + msg.getContent()));
+//
+//                    System.out.print("Enter Message Content Number to delete: ");
+//                    String messageContent = sc.nextLine();
+//                    messageService.getAllMessages().stream()
+//                            .filter(msg -> msg.getContent().equalsIgnoreCase(messageContent))
+//                            .findFirst()
+//                            .ifPresent(msg -> {
+//                                messageService.deleteMessage(msg.getId());
+//                                System.out.println("[Info] Message deleted successfully.");
+//                            });
                     break;
 
                 case 4: // 메인 메뉴로 돌아가기
