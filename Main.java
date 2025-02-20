@@ -230,18 +230,6 @@ public class Main {
                         messageService.deleteMessage(toDelete.getId());
                         System.out.println("[Info] Message deleted successfully.");
                     }
-
-//                    messageService.getAllMessages().forEach(msg ->System.out.println(msg.getSender().getUsername() + ": " + msg.getContent()));
-//
-//                    System.out.print("Enter Message Content Number to delete: ");
-//                    String messageContent = sc.nextLine();
-//                    messageService.getAllMessages().stream()
-//                            .filter(msg -> msg.getContent().equalsIgnoreCase(messageContent))
-//                            .findFirst()
-//                            .ifPresent(msg -> {
-//                                messageService.deleteMessage(msg.getId());
-//                                System.out.println("[Info] Message deleted successfully.");
-//                            });
                     break;
 
                 case 4: // 메인 메뉴로 돌아가기
@@ -275,21 +263,49 @@ public class Main {
                     break;
 
                 case 2: // 모든 채널 조회
-                    channelService.getAllChannels().forEach(channel -> System.out.println("Channel: " + channel.getName()));
+                    List<Channel> channels = channelService.getAllChannels();
+
+                    if (channels.isEmpty()) {
+                        System.out.println("[Info] No messages found."); // 채널이 없는 경우
+                        break;
+                    } else {
+                        System.out.println("\n=== Channel List ===");
+                        for (int i = 0; i < channels.size(); i++) {
+                            Channel ch = channels.get(i);
+                            System.out.println(i + 1 + ". [" + ch.getName() + "] ");
+                        }
+                    }
+//                    channelService.getAllChannels().forEach(channel -> System.out.println("Channel: " + channel.getName()));
                     break;
 
-                case 3: // 채널 삭제
-                    System.out.print("Enter Channel Name to delete: ");
-                    String deleteChannelName = sc.nextLine();
-                    channelService.getAllChannels().stream()
-                            .filter(channel -> channel.getName().equalsIgnoreCase(deleteChannelName))
-                            .findFirst()
-                            .ifPresent(channel -> {
-                                channelService.deleteChannel(channel.getId());
-                                System.out.println("[Info] Channel ["+deleteChannelName+"]  deleted successfully.");
-                            }); // 채널명이 존재하는 경우 삭제 절차 진행
-                    break;
+                case 3: // 채널 삭제. 임의의 값을 이용하여 채널 삭제 진행
+                    channels = channelService.getAllChannels();
 
+                    if (channels.isEmpty()) {
+                        System.out.println("[Info] No messages found.");
+                        break;
+                    }
+
+                    // 체널이 비어있지 않은 경우 진행. 삭제 진행을 위해 현재 존재하는 채널의 보기를 제시
+                    System.out.println("\n=== Select a Channel to Delete ===");
+                    for (int i = 0; i < channels.size(); i++) {
+                        Channel ch = channels.get(i);
+                        System.out.println(i + 1 + ". [" + ch.getName() + "] ");
+                    }
+
+                    // 채널의 번호를 선택하여 삭제 진행
+                    System.out.print("Enter the message number to delete: ");
+                    int deleteIndex = sc.nextInt();
+                    sc.nextLine();
+
+                    if (deleteIndex < 1 || deleteIndex > channels.size()) {
+                        System.out.println("[Error] Invalid channel number.");
+                    } else {
+                        Channel toDelete = channels.get(deleteIndex - 1);
+                        channelService.deleteChannel(toDelete.getId());
+                        System.out.println("[Info] Channel deleted successfully.");
+                    }
+                    break;
                 case 4:
                     return;
 
