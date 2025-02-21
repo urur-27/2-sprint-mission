@@ -108,6 +108,7 @@ public class Main {
                     System.out.print("Enter Username to update: ");
                     String oldUsername = sc.nextLine();
                     // list로 모든 유저들 정보를 받아두고 비교
+                    // switch-case는 {}을 사용하지 않으면 switch 블록 내부에서 전역 변수처럼 취급. 따라서 case5에서도 users 변수 사용 가능
                     List<User> users = userService.getAllUsers();
                     for (User user : users) {
                         if (user.getUsername().equalsIgnoreCase(oldUsername)) {

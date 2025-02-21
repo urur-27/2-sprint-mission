@@ -5,8 +5,8 @@ public class Message extends BaseEntity {
     // 해당 채널에 들어가면 "누구누구 : 메시지" 이런 식으로 대화가 표현되게
     // 보낸 User의 정보와 Channel 정보 포함
     private String content;
-    private User sender;
-    private Channel channel;
+    private final User sender;
+    private final Channel channel;
 
     public Message(String content, User sender, Channel channel) {
         super();
