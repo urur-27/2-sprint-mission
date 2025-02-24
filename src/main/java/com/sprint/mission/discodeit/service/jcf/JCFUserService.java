@@ -23,13 +23,6 @@ public class JCFUserService implements UserService {
         return instance;
     }
 
-
-
-
-//    public JCFUserService() {
-//        this.data = new HashMap<>();
-//    }
-
     // 필드를 활용해 생성, 조회, 수정, 삭제 메소드 제작
     // 유저 생성(이름, 상태)
     @Override

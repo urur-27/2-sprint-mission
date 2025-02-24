@@ -20,12 +20,7 @@ public class Main {
         //서비스 객체 생성. 싱글톤
         JCFUserService userService = JCFUserService.getInstance();
         JCFChannelService channelService = JCFChannelService.getInstance();
-        JCFMessageService messageService = JCFMessageService.getInstance();
-
-        //서비스 객체 생성
-//        JCFChannelService channelService = new JCFChannelService();
-//        JCFUserService userService = new JCFUserService();
-//        JCFMessageService messageService = new JCFMessageService();
+        JCFMessageService messageService = JCFMessageService.getInstance(userService, channelService);
 
         // 숫자를 입력받아 작동시키기
         Scanner sc = new Scanner(System.in);
@@ -188,7 +183,7 @@ public class Main {
                             .findFirst().orElse(null);
 
                     if (sender != null && channel != null) {
-                        messageService.createMessage(content, sender, channel);
+                        messageService.createMessage(content, sender.getId(), channel.getId());
                         System.out.println("[Info] Message sent successfully.");
                         System.out.println("[Info] Channel: "+channel.getName());
                         System.out.println("[Info] Sender: "+sender.getUsername());

@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5e4f6e4-bf3f-43a0-b519-40b9d9c8427d" name="Changes" comment="필드명 data로 수정">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="a5e4f6e4-bf3f-43a0-b519-40b9d9c8427d" name="Changes" comment="JCF~Service 파일들에 싱글톤 패턴 적용">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/MessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/MessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFMessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +46,7 @@
     &quot;git-widget-placeholder&quot;: &quot;part1-김민식&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/admin/Desktop/sb02/2-sprint-mission&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/admin/Desktop/2-sprint-mission&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -81,7 +86,8 @@
       <workItem from="1740113768368" duration="3922000" />
       <workItem from="1740199765107" duration="260000" />
       <workItem from="1740200045025" duration="127000" />
-      <workItem from="1740354997572" duration="5132000" />
+      <workItem from="1740354997572" duration="11950000" />
+      <workItem from="1740373238805" duration="7126000" />
     </task>
     <task id="LOCAL-00001" summary="파일 디렉토리 정리">
       <option name="closed" value="true" />
@@ -99,7 +105,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740358094182</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="JCF~Service 파일들에 싱글톤 패턴 적용">
+      <option name="closed" value="true" />
+      <created>1740372374666</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1740372374666</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -131,7 +145,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="파일 디렉토리 정리" />
     <MESSAGE value="필드명 data로 수정" />
-    <option name="LAST_COMMIT_MESSAGE" value="필드명 data로 수정" />
+    <MESSAGE value="JCF~Service 파일들에 싱글톤 패턴 적용" />
+    <option name="LAST_COMMIT_MESSAGE" value="JCF~Service 파일들에 싱글톤 패턴 적용" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

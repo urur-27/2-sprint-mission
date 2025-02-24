@@ -14,13 +14,7 @@ public class JavaApplication {
         //서비스 객체 생성. 싱글톤
         JCFUserService userService = JCFUserService.getInstance();
         JCFChannelService channelService = JCFChannelService.getInstance();
-        JCFMessageService messageService = JCFMessageService.getInstance();
-
-
-        // 서비스 객체
-//        JCFChannelService channelService = new JCFChannelService();
-//        JCFUserService userService = new JCFUserService();
-//        JCFMessageService messageService = new JCFMessageService();
+        JCFMessageService messageService = JCFMessageService.getInstance(userService, channelService); //의존성 주입
 
         // 등록(User). Kim - Kim@google.com, min - min@naver.com
         System.out.println("=== [User create] ===");
@@ -32,11 +26,8 @@ public class JavaApplication {
         channelService.createChannel("First");
         channelService.createChannel("Second");
 
-        // 등록(Message). Kim이 First채널에서 보내는 Message
-        System.out.println("\n=== [Message create] ===");
-        // Message 등록을 위해 User와 Channel을 조회해야 함
         // 단건 조회(User). Kim 조회
-        System.out.println("=== [User search] ===");
+        System.out.println("\n=== [User search] ===");
         User Kim = userService.getAllUsers().stream()
                 .filter(u -> u.getUsername().equalsIgnoreCase("Kim"))
                 .findFirst()
@@ -46,38 +37,27 @@ public class JavaApplication {
         System.out.println("=== [Channel search] ===");
         Channel FirstChannel =
                 channelService.getAllChannels().stream()
-                .filter(ch -> ch.getName().equalsIgnoreCase("First"))
-                .findFirst()
-                .orElse(null); // First 정보 받아오기
+                        .filter(ch -> ch.getName().equalsIgnoreCase("First"))
+                        .findFirst()
+                        .orElse(null); // First 정보 받아오기
 
-        // Kim과 FirstChannel 존재 확인 후 Message 등록
-        if (Kim != null && FirstChannel != null) {
-            messageService.createMessage("Message create check", Kim, FirstChannel);
-            System.out.println("Kim's Message sent successfully.");
-        } else {
-            System.out.println("Error: Sender or Channel not found.");
-        }
+        // 등록(Message). Kim이 First채널에서 보내는 Message
+        System.out.println("\n=== [Message create] ===");
+        messageService.createMessage("First channel message - by Kim",Kim.getId(),FirstChannel.getId());
+
 
         // min이 Second채널에서 보내는 Message
-        System.out.println("=== [User search] ===");
+        System.out.println("\n=== [Message create] ===");
         User min = userService.getAllUsers().stream()
                 .filter(u -> u.getUsername().equalsIgnoreCase("min"))
                 .findFirst()
-                .orElse(null); // Kim 정보 받아오기. 없으면 null
-
-        System.out.println("=== [Channel search] ===");
-        Channel secondChannel =
-                channelService.getAllChannels().stream()
+                .orElse(null); // min 정보 받아오기. 없으면 null
+        Channel secondChannel = channelService.getAllChannels().stream()
                         .filter(ch -> ch.getName().equalsIgnoreCase("Second"))
                         .findFirst()
-                        .orElse(null); // First 정보 받아오기
-        // min과 SecondChannel 존재 확인 후 Message 생성
-        if (min != null && secondChannel != null) {
-            messageService.createMessage("Second channel message - by min", min, secondChannel);
-            System.out.println("mis's Message sent successfully.");
-        } else {
-            System.out.println("Error: Sender or Channel not found.");
-        }
+                        .orElse(null); // Second 정보 받아오기
+        messageService.createMessage("Second channel message - by min", min.getId(), secondChannel.getId());
+
 
 
         // 단건 조회(Message). Kim이 작성한 메시지 조회
