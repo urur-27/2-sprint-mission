@@ -6,13 +6,29 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class JCFUserService implements UserService {
+    private static JCFUserService instance; // 정적 변수로 유일한 인스턴스 저장
+
     // JCF를 이용하여 저장할 수 있는 필드(data)를 final로 선언
     // Key - Value를 이용하여 저장하는 Map이용. 데이터 키 기간으로 검색할 수 있도록
     private final Map<UUID, User> data;
 
-    public JCFUserService() {
+    private JCFUserService() { // private 생성자로 외부에서 인스턴스 생성 방지
         this.data = new HashMap<>();
     }
+
+    public static JCFUserService getInstance() {
+        if (instance == null) {
+            instance = new JCFUserService();
+        }
+        return instance;
+    }
+
+
+
+
+//    public JCFUserService() {
+//        this.data = new HashMap<>();
+//    }
 
     // 필드를 활용해 생성, 조회, 수정, 삭제 메소드 제작
     // 유저 생성(이름, 상태)

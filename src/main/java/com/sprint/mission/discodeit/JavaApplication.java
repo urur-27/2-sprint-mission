@@ -11,10 +11,16 @@ public class JavaApplication {
     public static void main(String[] args) {
         // 등록, 조회(단건, 다건), 수정, 수정된 데이터 조회, 삭제, 조회를 통해 삭제되었는지 확인
 
+        //서비스 객체 생성. 싱글톤
+        JCFUserService userService = JCFUserService.getInstance();
+        JCFChannelService channelService = JCFChannelService.getInstance();
+        JCFMessageService messageService = JCFMessageService.getInstance();
+
+
         // 서비스 객체
-        JCFChannelService channelService = new JCFChannelService();
-        JCFUserService userService = new JCFUserService();
-        JCFMessageService messageService = new JCFMessageService();
+//        JCFChannelService channelService = new JCFChannelService();
+//        JCFUserService userService = new JCFUserService();
+//        JCFMessageService messageService = new JCFMessageService();
 
         // 등록(User). Kim - Kim@google.com, min - min@naver.com
         System.out.println("=== [User create] ===");
