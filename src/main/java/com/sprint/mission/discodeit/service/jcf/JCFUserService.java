@@ -8,10 +8,10 @@ import java.util.*;
 public class JCFUserService implements UserService {
     // JCF를 이용하여 저장할 수 있는 필드(data)를 final로 선언
     // Key - Value를 이용하여 저장하는 Map이용. 데이터 키 기간으로 검색할 수 있도록
-    private final Map<UUID, User> users;
+    private final Map<UUID, User> data;
 
     public JCFUserService() {
-        this.users = new HashMap<>();
+        this.data = new HashMap<>();
     }
 
     // 필드를 활용해 생성, 조회, 수정, 삭제 메소드 제작
@@ -19,25 +19,25 @@ public class JCFUserService implements UserService {
     @Override
     public void createUser(String username, String email) {
         User user = new User(username, email);
-        users.put(user.getId(), user);
+        data.put(user.getId(), user);
     }
 
     // UUID 기반 유저 조회
     @Override
     public User getUserById(UUID id) {
-        return users.get(id);
+        return data.get(id);
     }
 
     // 모든 유저 조회
     @Override
     public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+        return new ArrayList<>(data.values());
     }
 
     // UUID를 기반으로 수정
     @Override
     public void updateUser(UUID id, String username, String email) {
-        User user = users.get(id);
+        User user = data.get(id);
         if (user != null) {
             user.updateUser(username, email);
         }
@@ -46,7 +46,7 @@ public class JCFUserService implements UserService {
     // 삭제
     @Override
     public void deleteUser(UUID id) {
-        users.remove(id);
+        data.remove(id);
     }
 
 }
