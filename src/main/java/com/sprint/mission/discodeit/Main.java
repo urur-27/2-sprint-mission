@@ -3,9 +3,10 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ServiceFactory;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
 import java.util.Scanner;
@@ -16,11 +17,9 @@ public class Main {
         // 등록, 조회(단건, 다건), 수정, 수정된 데이터 조회, 삭제, 조회를 통해 삭제되었는지 확인
         // switch - case문을 이용해서 동작하는 서비스 설계
 
-
-        //서비스 객체 생성. 싱글톤
-        JCFUserService userService = JCFUserService.getInstance();
-        JCFChannelService channelService = JCFChannelService.getInstance();
-        JCFMessageService messageService = JCFMessageService.getInstance(userService, channelService);
+        UserService userService = ServiceFactory.getUserService();
+        ChannelService channelService = ServiceFactory.getChannelService();
+        MessageService messageService = ServiceFactory.getMessageService();
 
         // 숫자를 입력받아 작동시키기
         Scanner sc = new Scanner(System.in);
@@ -61,7 +60,7 @@ public class Main {
     }
 
     // 1. User 메뉴
-    private static void userMenu(JCFUserService userService, Scanner sc) {
+    private static void userMenu(UserService userService, Scanner sc) {
         while (true) {
             System.out.println("\n=== User Menu ===");
             System.out.println("1. Register User");
@@ -121,7 +120,6 @@ public class Main {
                             System.out.println("[Info] Username: "+oldUsername+" -> "+newUsername);
                             System.out.println("[Info] Email: "+user.getEmail()+" -> "+newEmail);
                             userService.updateUser(user.getId(), newUsername, newEmail);
-//                            System.out.println("[Info] User updated successfully.");
                             return;
                         }
                     }
@@ -136,7 +134,6 @@ public class Main {
                         if (user.getUsername().equalsIgnoreCase(deleteUsername)) {
                             userService.deleteUser(user.getId());
                             System.out.println("[Info] User \""+deleteUsername+"\" deleted successfully");
-//                            System.out.println("[Info] User deleted successfully.");
                             return;
                         }
                     }
@@ -154,7 +151,7 @@ public class Main {
     }
 
     // 2. Message 메뉴
-    private static void messageMenu(JCFMessageService messageService, JCFUserService userService, JCFChannelService channelService, Scanner sc) {
+    private static void messageMenu(MessageService messageService, UserService userService, ChannelService channelService, Scanner sc) {
         while (true) {
             System.out.println("\n=== Message Menu ===");
             System.out.println("1. Send Message");
@@ -246,7 +243,7 @@ public class Main {
     }
 
     // 3. Channel 메뉴
-    private static void channelMenu(JCFChannelService channelService, Scanner sc) {
+    private static void channelMenu(ChannelService channelService, Scanner sc) {
         while (true) {
             System.out.println("\n=== Channel Menu ===");
             System.out.println("1. Create Channel");
@@ -279,8 +276,7 @@ public class Main {
                             System.out.println(i + 1 + ". [" + ch.getName() + "] ");
                         }
                     }
-//                    channelService.getAllChannels().forEach(channel -> System.out.println("Channel: " + channel.getName()));
-                    break;
+                   break;
 
                 case 3: // 채널 삭제. 임의의 값을 이용하여 채널 삭제 진행
                     channels = channelService.getAllChannels();

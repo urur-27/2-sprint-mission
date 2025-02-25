@@ -3,33 +3,27 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
+
 //Message 생성 시 연관된 도메인 모델 데이터 확인하기. Message는 Channel과 User에 의존하고 있음
 public class JCFMessageService implements MessageService {
-    private final JCFUserService userService;
-    private final JCFChannelService channelService;
-
-    private static JCFMessageService instance; // 정적 변수로 유일한 인스턴스 저장
+    private final UserService userService;
+    private final ChannelService channelService;
 
     // JCF를 이용하여 저장할 수 있는 필드(data)를 final로 선언
     // Key - Value를 이용하여 저장하는 Map이용. 데이터 키 기간으로 검색할 수 있도록
     private final Map<UUID, Message> data;
 
 
-    private JCFMessageService(JCFUserService userService, JCFChannelService channelService)// private 생성자로 외부에서 인스턴스 생성 방지
+    public JCFMessageService(UserService userService, ChannelService channelService)// private 생성자로 외부에서 인스턴스 생성 방지
     {
         this.userService = userService;
         this.channelService = channelService;
         this.data = new HashMap<>();
-    }
-
-    public static JCFMessageService getInstance(JCFUserService userService, JCFChannelService channelService) {
-        if (instance == null) {
-            instance = new JCFMessageService(userService, channelService);
-        }
-        return instance;
     }
 
     // 메시지 생성(내용, 보낸 사람, 보낸 채널)
@@ -67,7 +61,8 @@ public class JCFMessageService implements MessageService {
         Message message = data.get(id);
         if (message != null) {
             message.updateMessage(content);
-        }    }
+        }
+    }
 
     // UUID 기반으로 삭제
     @Override

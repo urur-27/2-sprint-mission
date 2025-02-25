@@ -3,18 +3,17 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ServiceFactory;
+import com.sprint.mission.discodeit.service.UserService;
 
 public class JavaApplication {
     public static void main(String[] args) {
         // 등록, 조회(단건, 다건), 수정, 수정된 데이터 조회, 삭제, 조회를 통해 삭제되었는지 확인
-
-        //서비스 객체 생성. 싱글톤
-        JCFUserService userService = JCFUserService.getInstance();
-        JCFChannelService channelService = JCFChannelService.getInstance();
-        JCFMessageService messageService = JCFMessageService.getInstance(userService, channelService); //의존성 주입
+        UserService userService = ServiceFactory.getUserService();
+        ChannelService channelService = ServiceFactory.getChannelService();
+        MessageService messageService = ServiceFactory.getMessageService();
 
         // 등록(User). Kim - Kim@google.com, min - min@naver.com
         System.out.println("=== [User create] ===");
@@ -53,9 +52,9 @@ public class JavaApplication {
                 .findFirst()
                 .orElse(null); // min 정보 받아오기. 없으면 null
         Channel secondChannel = channelService.getAllChannels().stream()
-                        .filter(ch -> ch.getName().equalsIgnoreCase("Second"))
-                        .findFirst()
-                        .orElse(null); // Second 정보 받아오기
+                .filter(ch -> ch.getName().equalsIgnoreCase("Second"))
+                .findFirst()
+                .orElse(null); // Second 정보 받아오기
         messageService.createMessage("Second channel message - by min", min.getId(), secondChannel.getId());
 
 

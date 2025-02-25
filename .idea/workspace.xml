@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5e4f6e4-bf3f-43a0-b519-40b9d9c8427d" name="Changes" comment="JCF~Service 파일들에 싱글톤 패턴 적용">
+    <list default="true" id="a5e4f6e4-bf3f-43a0-b519-40b9d9c8427d" name="Changes" comment="JCFMessageService - 의존성 주입 방식으로 변경, createMessage에서 검증하는 로직 추가">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/MessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/MessageService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFMessageService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" afterDir="false" />
@@ -22,6 +21,13 @@
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -87,7 +93,8 @@
       <workItem from="1740199765107" duration="260000" />
       <workItem from="1740200045025" duration="127000" />
       <workItem from="1740354997572" duration="11950000" />
-      <workItem from="1740373238805" duration="7126000" />
+      <workItem from="1740373238805" duration="16269000" />
+      <workItem from="1740443146624" duration="19004000" />
     </task>
     <task id="LOCAL-00001" summary="파일 디렉토리 정리">
       <option name="closed" value="true" />
@@ -113,7 +120,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740372374666</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="JCFMessageService - 의존성 주입 방식으로 변경, createMessage에서 검증하는 로직 추가">
+      <option name="closed" value="true" />
+      <created>1740381291405</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1740381291405</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,7 +161,8 @@
     <MESSAGE value="파일 디렉토리 정리" />
     <MESSAGE value="필드명 data로 수정" />
     <MESSAGE value="JCF~Service 파일들에 싱글톤 패턴 적용" />
-    <option name="LAST_COMMIT_MESSAGE" value="JCF~Service 파일들에 싱글톤 패턴 적용" />
+    <MESSAGE value="JCFMessageService - 의존성 주입 방식으로 변경, createMessage에서 검증하는 로직 추가" />
+    <option name="LAST_COMMIT_MESSAGE" value="JCFMessageService - 의존성 주입 방식으로 변경, createMessage에서 검증하는 로직 추가" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
