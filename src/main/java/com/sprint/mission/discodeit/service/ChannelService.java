@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface ChannelService {
     //CRUD 기능을 선언
-    void createChannel(String name);
+    UUID createChannel(String name);
     Channel getChannelById(UUID id);
     List<Channel> getAllChannels();
     void updateChannel(UUID id, String name);

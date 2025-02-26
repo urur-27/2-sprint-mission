@@ -16,9 +16,10 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 생성
     @Override
-    public void createChannel(String name) {
+    public UUID createChannel(String name) {
         Channel channel = new Channel(name);
         data.put(channel.getId(), channel);
+        return channel.getId();
     }
 
     // ID를 통한 채널 조회

@@ -17,9 +17,10 @@ public class JCFUserService implements UserService {
     // 필드를 활용해 생성, 조회, 수정, 삭제 메소드 제작
     // 유저 생성(이름, 상태)
     @Override
-    public void createUser(String username, String email) {
+    public UUID createUser(String username, String email) {
         User user = new User(username, email);
         data.put(user.getId(), user);
+        return user.getId();
     }
 
     // UUID 기반 유저 조회

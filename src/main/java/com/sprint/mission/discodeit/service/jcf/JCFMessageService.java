@@ -28,12 +28,13 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 생성(내용, 보낸 사람, 보낸 채널)
     @Override
-    public void createMessage(String content, UUID senderId, UUID channelId) {
+    public UUID createMessage(String content, UUID senderId, UUID channelId) {
         User sender = findUserById(senderId);
         Channel channel = findChannelById(channelId);
 
         Message message = new Message(content, sender, channel);
         data.put(message.getId(), message);
+        return message.getId();
     }
 
     // UUID 기반 메시지 조회

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface MessageService {
     //CRUD 기능을 선언
-    void createMessage(String content, UUID senderId, UUID channelId);
+    UUID createMessage(String content, UUID senderId, UUID channelId);
     Message getMessageById(UUID id);
     List<Message> getAllMessages();
     void updateMessage(UUID id, String content);
