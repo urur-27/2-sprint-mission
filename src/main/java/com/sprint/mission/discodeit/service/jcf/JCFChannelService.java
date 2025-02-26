@@ -24,7 +24,8 @@ public class JCFChannelService implements ChannelService {
     // ID를 통한 채널 조회
     @Override
     public Channel getChannelById(UUID id) {
-        return data.get(id);
+        return Optional.ofNullable(data.get(id))
+                .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
     }
 
     // 모든 채널 조회 후 List 배열로 정리
@@ -37,14 +38,18 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void updateChannel(UUID id, String name) {
         Channel channel = data.get(id);
-        if (channel != null) {
-            channel.updateChannel(name);
+        if (channel == null) {
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
         }
+            channel.updateChannel(name);
     }
 
     // 채널 삭제
     @Override
     public void deleteChannel(UUID id) {
+        if (!data.containsKey(id)) {
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
+        }
         data.remove(id);
     }
 }

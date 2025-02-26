@@ -25,7 +25,8 @@ public class JCFUserService implements UserService {
     // UUID 기반 유저 조회
     @Override
     public User getUserById(UUID id) {
-        return data.get(id);
+        return Optional.ofNullable(data.get(id))
+                .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
     }
 
     // 모든 유저 조회
@@ -38,15 +39,18 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUser(UUID id, String username, String email) {
         User user = data.get(id);
-        if (user != null) {
-            user.updateUser(username, email);
+        if(user == null){
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
         }
+        user.updateUser(username, email);
     }
 
     // 삭제
     @Override
     public void deleteUser(UUID id) {
+        if (!data.containsKey(id)) {
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
+        }
         data.remove(id);
     }
-
 }

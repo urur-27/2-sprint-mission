@@ -151,7 +151,7 @@ public class JavaApplication {
         // Channel 수정. First 채널 이름 수정
         System.out.println("\n=== [Channel Update] ===");
         if (firstChannel != null) {
-            System.out.println("[Before]: " + firstChannel.getName());
+            System.out.println("[Before]: " + firstChannel.getName() );
             channelService.updateChannel(firstChannel.getId(), "Updated First Channel");
         Channel updatedChannel = channelService.getChannelById(firstChannel.getId());
         System.out.println("[After]: " + updatedChannel.getName());
@@ -159,18 +159,10 @@ public class JavaApplication {
             System.out.println("Channel to update not found.");
         }
 
-
-
-
         // User 삭제. Kim 삭제
         System.out.println("\n=== [User Delete] ===");
         userService.deleteUser(kim.getId());
-        User deletedUser = userService.getUserById(kim.getId());
-        if (deletedUser == null) {
-            System.out.println("User deleted successfully.");
-        } else {
-            System.out.println("Error: User deletion failed.");
-        }
+        System.out.println("Delete user \"Kim\"");
         System.out.println("view All users:");
         userService.getAllUsers().forEach(user ->
                 System.out.println("User: " + user.getUsername() + " - " + user.getEmail()));

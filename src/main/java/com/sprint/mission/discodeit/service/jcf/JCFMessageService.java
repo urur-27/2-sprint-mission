@@ -29,15 +29,8 @@ public class JCFMessageService implements MessageService {
     // 메시지 생성(내용, 보낸 사람, 보낸 채널)
     @Override
     public void createMessage(String content, UUID senderId, UUID channelId) {
-        User sender = userService.getUserById(senderId);
-        Channel channel = channelService.getChannelById(channelId);
-
-        if (sender == null) {
-            throw new IllegalArgumentException("User does not exist.");
-        }
-        if (channel == null) {
-            throw new IllegalArgumentException("Channel does not exist.");
-        } // sender와 channel 검증 단계
+        User sender = findUserById(senderId);
+        Channel channel = findChannelById(channelId);
 
         Message message = new Message(content, sender, channel);
         data.put(message.getId(), message);
@@ -46,7 +39,8 @@ public class JCFMessageService implements MessageService {
     // UUID 기반 메시지 조회
     @Override
     public Message getMessageById(UUID id) {
-        return data.get(id);
+        return Optional.ofNullable(data.get(id))
+                .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
     }
 
     // 모든 메시지 조회
@@ -59,14 +53,30 @@ public class JCFMessageService implements MessageService {
     @Override
     public void updateMessage(UUID id, String content) {
         Message message = data.get(id);
-        if (message != null) {
-            message.updateMessage(content);
+        if (message == null) {
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
         }
+        message.updateMessage(content);
     }
 
     // UUID 기반으로 삭제
     @Override
     public void deleteMessage(UUID id) {
+        if (!data.containsKey(id)) {
+            throw new NoSuchElementException("No data for that ID could be found.: " + id);
+        }
         data.remove(id);
+    }
+
+    // User ID 검증
+    private User findUserById(UUID id) {
+        return Optional.ofNullable(userService.getUserById(id))
+                .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
+    }
+
+    // Channel ID 검증
+    private Channel findChannelById(UUID id) {
+        return Optional.ofNullable(channelService.getChannelById(id))
+                .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
     }
 }
