@@ -129,19 +129,22 @@ public class JavaApplication {
     private static void printUser(User user) {
         System.out.println("User: " + user.getUsername()
                 + " | Email: " + user.getEmail()
-                + " | Created At: " + formatTime(user.getCreatedAt()));
+                + " | Created At: " + formatTime(user.getCreatedAt())
+                + " | Updated At: " + formatTime(user.getUpdateAt()));
     }
 
     private static void printChannel(Channel channel) {
         System.out.println("Channel: " + channel.getName()
-                + " | Created At: " + formatTime(channel.getCreatedAt()));
+                + " | Created At: " + formatTime(channel.getCreatedAt())
+                + " | Updated At: " + formatTime(channel.getUpdateAt()));
     }
 
     private static void printMessage(Message message) {
         System.out.println("Message: " + message.getContent()
                 + " | Sender: " + message.getSender().getUsername()
                 + " | Channel: " + message.getChannel().getName()
-                + " | Created At: " + formatTime(message.getCreatedAt()));
+                + " | Created At: " + formatTime(message.getCreatedAt())
+                + " | Updated At: " + formatTime(message.getUpdateAt()));
     }
 
     private static String formatTime(long timestamp) {
