@@ -30,10 +30,8 @@ public class Main {
             System.out.println("2. Message");
             System.out.println("3. Channel");
             System.out.println("4. Exit");
-            System.out.print("Choice: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
+            int choice = getValidatedInt(sc, "Choice: ");
 
             switch (choice) {
                 case 1: // User 메뉴
@@ -67,11 +65,8 @@ public class Main {
             System.out.println("4. Update User");
             System.out.println("5. Delete User");
             System.out.println("6. Back to Main Menu");
-            System.out.print("Choice: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
-
+            int choice = getValidatedInt(sc, "Choice: ");
             switch (choice) {
                 case 1: // 유저 등록
                     // 이름과 이메일을 받아서 등록
@@ -108,10 +103,8 @@ public class Main {
             System.out.println("4. Update Message");
             System.out.println("5. Delete Message");
             System.out.println("6. Back to Main Menu");
-            System.out.print("Choice: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
+            int choice = getValidatedInt(sc, "Choice: ");
 
             switch (choice) {
                 case 1: // 메시지 전송. 유저 이름, 채널 이름, 메시지를 받아서 유저와 채널이 실존하면 메시지 전송
@@ -149,10 +142,8 @@ public class Main {
             System.out.println("4. Update Channel");
             System.out.println("5. Delete Channel");
             System.out.println(". Back to Main Menu");
-            System.out.print("Choice: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
+            int choice = getValidatedInt(sc, "Choice: ");
 
             switch (choice) {
                 case 1: // 채널 생성
@@ -255,9 +246,8 @@ public class Main {
             System.out.println((i + 1) + ". [" + user.getUsername() + "] - " + user.getEmail());
         }
 
-        System.out.print("Enter the user number to update: ");
-        int updateIndex = sc.nextInt();
-        sc.nextLine();
+        int updateIndex = getValidatedInt(sc,"Enter the user number to update: ");
+
 
         if (updateIndex < 1 || updateIndex > users.size()) {
             System.out.println("[Error] Invalid user number.");
@@ -291,10 +281,7 @@ public class Main {
             System.out.println((i + 1) + ". [" + ch.getName() + "]");
         }
 
-        System.out.print("Enter the channel number to update: ");
-        int updateIndex = sc.nextInt();
-        sc.nextLine();
-
+        int updateIndex = getValidatedInt(sc,"Enter the channel number to update: ");
         if (updateIndex < 1 || updateIndex > channels.size()) {
             System.out.println("[Error] Invalid channel number.");
         } else {
@@ -322,10 +309,7 @@ public class Main {
             System.out.println((i + 1) + ". [" + msg.getSender().getUsername() + "] " + msg.getContent());
         }
 
-        System.out.print("Enter the message number to update: ");
-        int updateIndex = sc.nextInt();
-        sc.nextLine();
-
+        int updateIndex = getValidatedInt(sc,"Enter the message number to update: ");
         if (updateIndex < 1 || updateIndex > messages.size()) {
             System.out.println("[Error] Invalid message number.");
         } else {
@@ -353,10 +337,7 @@ public class Main {
             System.out.println((i + 1) + ". [" + user.getUsername() + "] - " + user.getEmail());
         }
 
-        System.out.print("Enter the user number to delete: ");
-        int deleteIndex = sc.nextInt();
-        sc.nextLine();
-
+        int deleteIndex = getValidatedInt(sc,"Enter the user number to delete: ");
         if (deleteIndex < 1 || deleteIndex > users.size()) {
             System.out.println("[Error] Invalid user number.");
         } else {
@@ -381,9 +362,7 @@ public class Main {
             System.out.println((i + 1) + ". [" + msg.getSender().getUsername() + "] " + msg.getContent());
         }
 
-        System.out.print("Enter the message number to delete: ");
-        int deleteIndex = sc.nextInt();
-        sc.nextLine();
+        int deleteIndex = getValidatedInt(sc,"Enter the message number to delete: ");
 
         if (deleteIndex < 1 || deleteIndex > messages.size()) {
             System.out.println("[Error] Invalid message number.");
@@ -409,10 +388,7 @@ public class Main {
             System.out.println((i + 1) + ". [" + ch.getName() + "]");
         }
 
-        System.out.print("Enter the channel number to delete: ");
-        int deleteIndex = sc.nextInt();
-        sc.nextLine();
-
+        int deleteIndex = getValidatedInt(sc,"Enter the channel number to delete: ");
         if (deleteIndex < 1 || deleteIndex > channels.size()) {
             System.out.println("[Error] Invalid channel number.");
         } else {
@@ -463,4 +439,30 @@ public class Main {
         } else {
             System.out.println("[Error] Sender or Channel not found.");
         }
-    }}
+    }
+
+
+    // 숫자가 입력 되었는지 확인
+    public static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);  // 문자열을 Double로 변환을 시도
+            return true;  // 변환 성공 시 숫자
+        } catch (NumberFormatException e) {
+            return false;  // 변환 실패 시 숫자가 아님
+        }
+    }
+
+    // 입력 받는 내용이 숫자인지 검증하여 맞으면 int 값 반환
+    public static int getValidatedInt(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = sc.nextLine();
+            if (isNumeric(input)) {
+                return Integer.parseInt(input);
+            } else {
+                System.out.println("[Error]: Please enter a valid number.");
+            }
+        }
+    }
+
+}
