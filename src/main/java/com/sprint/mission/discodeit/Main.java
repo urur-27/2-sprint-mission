@@ -141,7 +141,7 @@ public class Main {
             System.out.println("3. See All Channels");
             System.out.println("4. Update Channel");
             System.out.println("5. Delete Channel");
-            System.out.println(". Back to Main Menu");
+            System.out.println("6. Back to Main Menu");
 
             int choice = getValidatedInt(sc, "Choice: ");
 

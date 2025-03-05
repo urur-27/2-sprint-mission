@@ -93,7 +93,7 @@ public class JavaApplication {
 
         // User 삭제. Kim 삭제
         System.out.println("\n=== [User Delete] ===");
-        userService.deleteUser(kim.getId());
+        userService.deleteUser(kimId);
         System.out.println("Delete user Kim");
         printAllUsers(userService);
 
