@@ -14,19 +14,19 @@ import java.util.UUID;
 
 public class JavaApplication {
     static UUID setupUser(UserService userService) {
-        UUID userId = userService.createUser("woody", "woody@codeit.com");
+        UUID userId = userService.create("woody", "woody@codeit.com");
         System.out.println("유저 생성: " + userId);
         return userId;
     }
 
     static UUID setupChannel(ChannelService channelService) {
-        UUID channelId = channelService.createChannel("공지");
+        UUID channelId = channelService.create("공지");
         System.out.println("채널 생성: " + channelId);
         return channelId;
     }
 
     static void messageCreateTest(MessageService messageService, UUID senderId, UUID channelId) {
-        UUID message = messageService.createMessage("안녕하세요.", senderId, channelId);
+        UUID message = messageService.create("안녕하세요.", senderId, channelId);
         System.out.println("메시지 생성: " + message);
     }
 

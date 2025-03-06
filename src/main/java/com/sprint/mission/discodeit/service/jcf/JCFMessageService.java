@@ -44,7 +44,7 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 생성(내용, 보낸 사람, 보낸 채널)
     @Override
-    public UUID createMessage(String content, UUID senderId, UUID channelId) {
+    public UUID create(String content, UUID senderId, UUID channelId) {
         User sender = findUserById(senderId);
         Channel channel = findChannelById(channelId);
 
@@ -55,20 +55,20 @@ public class JCFMessageService implements MessageService {
 
     // UUID 기반 메시지 조회
     @Override
-    public Message getMessageById(UUID id) {
+    public Message findById(UUID id) {
         return Optional.ofNullable(data.get(id))
                 .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
     }
 
     // 모든 메시지 조회
     @Override
-    public List<Message> getAllMessages() {
+    public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
 
     // UUID를 기반으로 메시지 수정
     @Override
-    public void updateMessage(UUID id, String content) {
+    public void update(UUID id, String content) {
         Message message = data.get(id);
         if (message == null) {
             throw new NoSuchElementException("No data for that ID could be found.: " + id);
@@ -78,7 +78,7 @@ public class JCFMessageService implements MessageService {
 
     // UUID 기반으로 삭제
     @Override
-    public void deleteMessage(UUID id) {
+    public void delete(UUID id) {
         if (!data.containsKey(id)) {
             throw new NoSuchElementException("No data for that ID could be found.: " + id);
         }
@@ -87,13 +87,13 @@ public class JCFMessageService implements MessageService {
 
     // User ID 검증
     private User findUserById(UUID id) {
-        return Optional.ofNullable(userService.getUserById(id))
+        return Optional.ofNullable(userService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
     }
 
     // Channel ID 검증
     private Channel findChannelById(UUID id) {
-        return Optional.ofNullable(channelService.getChannelById(id))
+        return Optional.ofNullable(channelService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
     }
 }

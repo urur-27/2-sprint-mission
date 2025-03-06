@@ -3,11 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -47,49 +44,49 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public UUID createMessage(String content, UUID senderId, UUID channelId) {
+    public UUID create(String content, UUID senderId, UUID channelId) {
         User sender = findUserById(senderId);
         Channel channel = findChannelById(channelId);
 
         Message message = new Message(content, sender, channel);
-        messageRepository.save(message);
+        messageRepository.create(message);
         return message.getId();
     }
 
     @Override
-    public Message getMessageById(UUID id) {
+    public Message findById(UUID id) {
         return Optional.ofNullable(messageRepository.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("No message found for ID: " + id));
     }
 
     @Override
-    public List<Message> getAllMessages() {
+    public List<Message> findAll() {
         return messageRepository.findAll();
     }
 
     @Override
-    public void updateMessage(UUID id, String messageName) {
+    public void update(UUID id, String messageName) {
         // 검증
-        Message message = getMessageById(id);
+        Message message = findById(id);
         messageRepository.update(id, messageName);
     }
 
     @Override
-    public void deleteMessage(UUID id) {
+    public void delete(UUID id) {
         // 검증
-        Message message = getMessageById(id);
+        Message message = findById(id);
         messageRepository.delete(id);
     }
 
     // User ID 검증
     private User findUserById(UUID id) {
-        return Optional.ofNullable(userService.getUserById(id))
+        return Optional.ofNullable(userService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
     }
 
     // Channel ID 검증
     private Channel findChannelById(UUID id) {
-        return Optional.ofNullable(channelService.getChannelById(id))
+        return Optional.ofNullable(channelService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
     }
 }

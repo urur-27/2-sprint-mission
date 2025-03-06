@@ -71,7 +71,7 @@ public class FileUserService implements UserService {
     // -----------------------
 
     @Override
-    public UUID createUser(String username, String email) {
+    public UUID create(String username, String email) {
         User user = new User(username, email);
         // User를 개별 파일에 직렬화 저장
         saveUserToFile(user);
@@ -79,19 +79,13 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User getUserById(UUID id) {
+    public User findById(UUID id) {
         return Optional.ofNullable(loadUserFromFile(id))
                 .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
-//        User user = loadUserFromFile(id);
-//        if (user == null) {
-//            // 해당 id의 User 파일이 없다면 예외처리
-//            throw new NoSuchElementException("No user file found for ID: " + id);
-//        }
-//        return user;
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> findAll() {
         File[] files = USER_DIR.listFiles((dir, name) -> name.endsWith(".dat"));
         if (files == null) {
             // 폴더가 존재하지 않거나 IO 에러 등
@@ -111,7 +105,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void updateUser(UUID id, String username, String email) {
+    public void update(UUID id, String username, String email) {
         User user = loadUserFromFile(id);
         if (user == null) {
             throw new NoSuchElementException("No user file found for ID: " + id);
@@ -122,7 +116,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void deleteUser(UUID id) {
+    public void delete(UUID id) {
         File f = getUserFile(id);
         if (!f.exists() || !f.isFile()) {
             throw new NoSuchElementException("No user file found for ID: " + id);

@@ -36,14 +36,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UUID createUser(String username, String email) {
+    public UUID create(String username, String email) {
         User user = new User(username, email);
-        userRepository.save(user);
+        userRepository.create(user);
         return user.getId();
     }
 
     @Override
-    public User getUserById(UUID id) {
+    public User findById(UUID id) {
         User user = userRepository.findById(id);
         if (user == null) {
             throw new NoSuchElementException("No user found for ID: " + id);
@@ -52,18 +52,18 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
-    public void updateUser(UUID id, String userName, String email) {
+    public void update(UUID id, String userName, String email) {
 
         userRepository.update(id, userName, email);
     }
 
     @Override
-    public void deleteUser(UUID id) {
+    public void delete(UUID id) {
         userRepository.delete(id);
     }
 

@@ -25,7 +25,7 @@ public class FileMessageRepository implements MessageRepository {
 
     // Message 객체를 해당 파일에 직렬화하여 저장
     @Override
-    public void save(Message message) {
+    public void create(Message message) {
         File f = getMessageFile(message.getId());
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
             oos.writeObject(message);
@@ -75,7 +75,7 @@ public class FileMessageRepository implements MessageRepository {
             throw new NoSuchElementException("No message file found for ID: " + id);
         }
         message.updateMessage(newMessageName);
-        save(message);
+        create(message);
     }
 
     // 사용자 삭제

@@ -25,7 +25,7 @@ public class FileChannelRepository implements ChannelRepository {
 
     // Channel 객체를 해당 파일에 직렬화하여 저장
     @Override
-    public void save(Channel channel) {
+    public void create(Channel channel) {
         File f = getChannelFile(channel.getId());
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
             oos.writeObject(channel);
@@ -75,7 +75,7 @@ public class FileChannelRepository implements ChannelRepository {
             throw new NoSuchElementException("No channel file found for ID: " + id);
         }
         channel.updateChannel(newChannelName);
-        save(channel);
+        create(channel);
     }
 
     // 사용자 삭제

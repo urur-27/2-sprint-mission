@@ -34,7 +34,7 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 생성
     @Override
-    public UUID createChannel(String name) {
+    public UUID create(String name) {
         Channel channel = new Channel(name);
         data.put(channel.getId(), channel);
         return channel.getId();
@@ -42,20 +42,20 @@ public class JCFChannelService implements ChannelService {
 
     // ID를 통한 채널 조회
     @Override
-    public Channel getChannelById(UUID id) {
+    public Channel findById(UUID id) {
         return Optional.ofNullable(data.get(id))
                 .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
     }
 
     // 모든 채널 조회 후 List 배열로 정리
     @Override
-    public List<Channel> getAllChannels() {
+    public List<Channel> findAll() {
         return new ArrayList<>(data.values());
     }
 
     // 채널 수정
     @Override
-    public void updateChannel(UUID id, String name) {
+    public void update(UUID id, String name) {
         Channel channel = data.get(id);
         if (channel == null) {
             throw new NoSuchElementException("No data for that ID could be found.: " + id);
@@ -65,7 +65,7 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 삭제
     @Override
-    public void deleteChannel(UUID id) {
+    public void delete(UUID id) {
         if (!data.containsKey(id)) {
             throw new NoSuchElementException("No data for that ID could be found.: " + id);
         }

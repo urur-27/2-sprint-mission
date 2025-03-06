@@ -21,7 +21,7 @@ public class FileUserRepository implements UserRepository {
 
     // User 객체를 해당 파일에 직렬화하여 저장
     @Override
-    public void save(User user) {
+    public void create(User user) {
         File f = getUserFile(user.getId());
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
             oos.writeObject(user);
@@ -71,7 +71,7 @@ public class FileUserRepository implements UserRepository {
             throw new NoSuchElementException("No user file found for ID: " + id);
         }
         user.updateUser(newUsername, newEmail);
-        save(user);
+        create(user);
     }
 
     // 사용자 삭제

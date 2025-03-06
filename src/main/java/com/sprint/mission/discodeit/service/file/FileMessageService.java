@@ -78,7 +78,7 @@ public class FileMessageService implements MessageService {
     // -----------------------
 
     @Override
-    public UUID createMessage(String content, UUID senderId, UUID channelId) {
+    public UUID create(String content, UUID senderId, UUID channelId) {
         User sender = findUserById(senderId);
         Channel channel = findChannelById(channelId);
 
@@ -90,19 +90,13 @@ public class FileMessageService implements MessageService {
 
 
     @Override
-    public Message getMessageById(UUID id) {
+    public Message findById(UUID id) {
         return Optional.ofNullable(loadMessageFromFile(id))
                 .orElseThrow(() -> new NoSuchElementException("No message found for ID: " + id));
-//        Message message = loadMessageFromFile(id);
-//        if (message == null) {
-//            // 해당 id의 Message 파일이 없다면 예외처리
-//            throw new NoSuchElementException("No message file found for ID: " + id);
-//        }
-//        return message;
     }
 
     @Override
-    public List<Message> getAllMessages() {
+    public List<Message> findAll() {
         File[] files = MESSAGE_DIR.listFiles((dir, name) -> name.endsWith(".dat"));
         if (files == null) {
             // 폴더가 존재하지 않거나 IO 에러 등
@@ -122,7 +116,7 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID id, String content) {
+    public void update(UUID id, String content) {
         Message message = loadMessageFromFile(id);
         if (message == null) {
             throw new NoSuchElementException("No message file found for ID: " + id);
@@ -133,7 +127,7 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public void deleteMessage(UUID id) {
+    public void delete(UUID id) {
         File f = getMessageFile(id);
         if (!f.exists() || !f.isFile()) {
             throw new NoSuchElementException("No message file found for ID: " + id);
@@ -146,13 +140,13 @@ public class FileMessageService implements MessageService {
 
     // User ID 검증
     private User findUserById(UUID id) {
-        return Optional.ofNullable(userService.getUserById(id))
+        return Optional.ofNullable(userService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
     }
 
     // Channel ID 검증
     private Channel findChannelById(UUID id) {
-        return Optional.ofNullable(channelService.getChannelById(id))
+        return Optional.ofNullable(channelService.findById(id))
                 .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
     }
 }

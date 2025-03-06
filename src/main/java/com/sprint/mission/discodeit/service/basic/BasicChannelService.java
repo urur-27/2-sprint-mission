@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
@@ -40,14 +37,14 @@ public class BasicChannelService implements ChannelService {
         return instance;
     }
     @Override
-    public UUID createChannel(String channelName) {
+    public UUID create(String channelName) {
         Channel channel = new Channel(channelName);
-        channelRepository.save(channel);
+        channelRepository.create(channel);
         return channel.getId();
     }
 
     @Override
-    public Channel getChannelById(UUID id) {
+    public Channel findById(UUID id) {
         Channel channel = channelRepository.findById(id);
         if (channel == null) {
             throw new NoSuchElementException("No channel found for ID: " + id);
@@ -56,17 +53,17 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public List<Channel> getAllChannels() {
+    public List<Channel> findAll() {
         return channelRepository.findAll();
     }
 
     @Override
-    public void updateChannel(UUID id, String channelName) {
+    public void update(UUID id, String channelName) {
         channelRepository.update(id, channelName);
     }
 
     @Override
-    public void deleteChannel(UUID id) {
+    public void delete(UUID id) {
         channelRepository.delete(id);
     }
 }

@@ -173,19 +173,19 @@ public class Main {
     // 모든 유저 출력
     private static void searchAllUsers(UserService userService) {
         System.out.println("\n=== User List ===");
-        userService.getAllUsers().forEach(user -> System.out.println("UserName: "+user.getUsername() + " | Email: " + user.getEmail()));
+        userService.findAll().forEach(user -> System.out.println("UserName: "+user.getUsername() + " | Email: " + user.getEmail()));
     }
 
     // 모든 채널 출력
     private static void searchAllChannels(ChannelService channelService) {
         System.out.println("\n=== Channel List ===");
-        channelService.getAllChannels().forEach(channel -> System.out.println("ChannelName: "+channel.getName()));
+        channelService.findAll().forEach(channel -> System.out.println("ChannelName: "+channel.getName()));
     }
 
     // 모든 메시지 출력
     private static void searchAllMessages(MessageService messageService) {
         System.out.println("\n=== Message List ===");
-        messageService.getAllMessages().forEach(message ->
+        messageService.findAll().forEach(message ->
                 System.out.println("[" + message.getSender().getUsername() + "] " + message.getContent()));
     }
 
@@ -194,7 +194,7 @@ public class Main {
         System.out.print("Enter User Name to search: ");
         String userName = sc.nextLine();
 
-        userService.getAllUsers().stream()
+        userService.findAll().stream()
                 .filter(user -> user.getUsername().equalsIgnoreCase(userName))
                 .forEach(user -> System.out.println("[Info] User found. User: " + user.getUsername() + " | Email: " + user.getEmail()));
     }
@@ -204,7 +204,7 @@ public class Main {
         System.out.print("Enter Sender Name or Channel Name to search messages: ");
         String keyword = sc.nextLine().toLowerCase();
 
-        List<Message> messages = messageService.getAllMessages().stream()
+        List<Message> messages = messageService.findAll().stream()
                 .filter(msg -> msg.getSender().getUsername().equalsIgnoreCase(keyword)
                         || msg.getChannel().getName().equalsIgnoreCase(keyword))
                 .toList();
@@ -222,7 +222,7 @@ public class Main {
         System.out.print("Enter Channel Name to search: ");
         String channelName = sc.nextLine();
 
-        channelService.getAllChannels().stream()
+        channelService.findAll().stream()
                 .filter(channel -> channel.getName().equalsIgnoreCase(channelName))
                 .findFirst()
                 .ifPresentOrElse(
@@ -233,7 +233,7 @@ public class Main {
 
     // 유저 정보 수정
     private static void updateUser(UserService userService, Scanner sc) {
-        List<User> users = userService.getAllUsers();
+        List<User> users = userService.findAll();
 
         if (users.isEmpty()) {
             System.out.println("[Info] No users available to update.");
@@ -260,7 +260,7 @@ public class Main {
             System.out.print("Enter new Email: ");
             String newEmail = sc.nextLine();
 
-            userService.updateUser(toUpdate.getId(), newUsername, newEmail);
+            userService.update(toUpdate.getId(), newUsername, newEmail);
             System.out.println("[Info] Username: " + oldUsername + " -> " + newUsername
             + " | Email: "+ oldEmail +" -> "+newEmail);
         }
@@ -268,7 +268,7 @@ public class Main {
 
     // 채널 수정
     private static void updateChannel(ChannelService channelService, Scanner sc) {
-        List<Channel> channels = channelService.getAllChannels();
+        List<Channel> channels = channelService.findAll();
 
         if (channels.isEmpty()) {
             System.out.println("[Info] No channels available to update.");
@@ -289,14 +289,14 @@ public class Main {
             String oldChannelName = toUpdate.getName();
             System.out.print("Enter new Channel Name: ");
             String newChannelName = sc.nextLine();
-            channelService.updateChannel(toUpdate.getId(), newChannelName);
+            channelService.update(toUpdate.getId(), newChannelName);
             System.out.println("[Info] Channel updated: " + oldChannelName + " -> " + newChannelName);
         }
     }
 
     // 메시지 수정
     private static void updateMessage(MessageService messageService, Scanner sc) {
-        List<Message> messages = messageService.getAllMessages();
+        List<Message> messages = messageService.findAll();
 
         if (messages.isEmpty()) {
             System.out.println("[Info] No messages available to update.");
@@ -317,14 +317,14 @@ public class Main {
             String oldMessageContent = toUpdate.getContent();
             System.out.print("Enter new Message Content: ");
             String newMessageContent = sc.nextLine();
-            messageService.updateMessage(toUpdate.getId(), newMessageContent);
+            messageService.update(toUpdate.getId(), newMessageContent);
             System.out.println("[Info] Message updated: " + oldMessageContent + " -> " + newMessageContent);
         }
     }
 
     // 유저 삭제
     private static void deleteUser(UserService userService, Scanner sc) {
-        List<User> users = userService.getAllUsers();
+        List<User> users = userService.findAll();
 
         if (users.isEmpty()) {
             System.out.println("[Info] No users available to delete.");
@@ -342,14 +342,14 @@ public class Main {
             System.out.println("[Error] Invalid user number.");
         } else {
             User toDelete = users.get(deleteIndex - 1);
-            userService.deleteUser(toDelete.getId());
+            userService.delete(toDelete.getId());
             System.out.println("[Info] User deleted: " + toDelete.getUsername());
         }
     }
 
     // 메시지 삭제
     private static void deleteMessage(MessageService messageService, Scanner sc) {
-        List<Message> messages = messageService.getAllMessages();
+        List<Message> messages = messageService.findAll();
 
         if (messages.isEmpty()) {
             System.out.println("[Info] No messages available to delete.");
@@ -368,14 +368,14 @@ public class Main {
             System.out.println("[Error] Invalid message number.");
         } else {
             Message toDelete = messages.get(deleteIndex - 1);
-            messageService.deleteMessage(toDelete.getId());
+            messageService.delete(toDelete.getId());
             System.out.println("[Info] Message deleted: " + toDelete.getContent());
         }
     }
 
     // 채널 삭제
     private static void deleteChannel(ChannelService channelService, Scanner sc) {
-        List<Channel> channels = channelService.getAllChannels();
+        List<Channel> channels = channelService.findAll();
 
         if (channels.isEmpty()) {
             System.out.println("[Info] No channels available to delete.");
@@ -393,7 +393,7 @@ public class Main {
             System.out.println("[Error] Invalid channel number.");
         } else {
             Channel toDelete = channels.get(deleteIndex - 1);
-            channelService.deleteChannel(toDelete.getId());
+            channelService.delete(toDelete.getId());
             System.out.println("[Info] Channel deleted: " + toDelete.getName());
         }
     }
@@ -404,7 +404,7 @@ public class Main {
         String username = sc.nextLine();
         System.out.print("Enter Email: ");
         String email = sc.nextLine();
-        userService.createUser(username, email);
+        userService.create(username, email);
         // 등록된 유저 정보 출력
         System.out.println("[Info] Username : " + username + ", Email : "+email+" is registered.");
     }
@@ -413,7 +413,7 @@ public class Main {
     private static void createChannel(ChannelService channelService, Scanner sc){
         System.out.print("Enter Channel Name: ");
         String channelName = sc.nextLine();
-        channelService.createChannel(channelName);
+        channelService.create(channelName);
         System.out.println("[Info] Channel ["+channelName+"] created successfully.");
     }
 
@@ -426,15 +426,15 @@ public class Main {
         System.out.print("Enter Message: ");
         String content = sc.nextLine();
 
-        User sender = userService.getAllUsers().stream()
+        User sender = userService.findAll().stream()
                 .filter(user -> user.getUsername().equalsIgnoreCase(senderName))
                 .findFirst().orElse(null);
-        Channel channel = channelService.getAllChannels().stream()
+        Channel channel = channelService.findAll().stream()
                 .filter(ch -> ch.getName().equalsIgnoreCase(channelName))
                 .findFirst().orElse(null);
 
         if (sender != null && channel != null) {
-            messageService.createMessage(content, sender.getId(), channel.getId());
+            messageService.create(content, sender.getId(), channel.getId());
             System.out.println("[Info] Message sent: " + content);
         } else {
             System.out.println("[Error] Sender or Channel not found.");

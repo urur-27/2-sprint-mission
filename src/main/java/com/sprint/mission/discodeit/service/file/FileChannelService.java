@@ -70,7 +70,7 @@ public class FileChannelService implements ChannelService {
     // -----------------------
 
     @Override
-    public UUID createChannel(String channelname) {
+    public UUID create(String channelname) {
         Channel channel = new Channel(channelname);
         // Channel를 개별 파일에 직렬화 저장
         saveChannelToFile(channel);
@@ -79,20 +79,13 @@ public class FileChannelService implements ChannelService {
 
 
     @Override
-    public Channel getChannelById(UUID id) {
+    public Channel findById(UUID id) {
         return Optional.ofNullable(loadChannelFromFile(id))
                 .orElseThrow(() -> new NoSuchElementException("No data for that ID could be found.: " + id));
-
-//        Channel channel = loadChannelFromFile(id);
-//        if (channel == null) {
-//            // 해당 id의 Channel 파일이 없다면 예외처리
-//            throw new NoSuchElementException("No channel file found for ID: " + id);
-//        }
-//        return channel;
     }
 
     @Override
-    public List<Channel> getAllChannels() {
+    public List<Channel> findAll() {
         File[] files = CHANNEL_DIR.listFiles((dir, name) -> name.endsWith(".dat"));
         if (files == null) {
             // 폴더가 존재하지 않거나 IO 에러 등
@@ -112,7 +105,7 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void updateChannel(UUID id, String channelname) {
+    public void update(UUID id, String channelname) {
         Channel channel = loadChannelFromFile(id);
         if (channel == null) {
             throw new NoSuchElementException("No channel file found for ID: " + id);
@@ -123,7 +116,7 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void deleteChannel(UUID id) {
+    public void delete(UUID id) {
         File f = getChannelFile(id);
         if (!f.exists() || !f.isFile()) {
             throw new NoSuchElementException("No channel file found for ID: " + id);
