@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class BaseEntity {
+public class BaseEntity implements Serializable {
+    // 직렬화 버전 관리
+    private static final long serialVersionUID = 1L;
+
     // User, Channel, Message에서 공통적으로 다루는 것을 관리하는 class
-    private UUID id; // 객체를 식별하기 위한 id
+    private final UUID id; // 객체를 식별하기 위한 id
     private final long createdAt; // 객체의 생성 시간
     private long updatedAt; // 객체의 수정 시간
 
@@ -25,11 +29,6 @@ public class BaseEntity {
 
     public long getUpdateAt() {
         return updatedAt;
-    }
-
-    // update
-    public void updateId(UUID id) {
-        this.id = id;
     }
 
     // updateAt 갱신 메서드
