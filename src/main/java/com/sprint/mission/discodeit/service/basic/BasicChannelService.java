@@ -20,11 +20,6 @@ public class BasicChannelService implements ChannelService {
         this.channelRepository = channelRepository;
     }
 
-    // 기본 저장소를 FileChannelRepository로 설정
-    public static BasicChannelService getInstance() {
-        return getInstance(new FileChannelRepository());
-    }
-
     // 다른 저장소를 주입 받을 수 있도록 getInstance 오버로딩
     public static BasicChannelService getInstance(ChannelRepository channelRepository) {
         if (instance == null) {

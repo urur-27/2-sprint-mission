@@ -18,11 +18,6 @@ public class BasicUserService implements UserService {
         this.userRepository = userRepository;
     }
 
-    // 기본 저장소를 FileUserRepository로 설정
-    public static BasicUserService getInstance() {
-        return getInstance(new FileUserRepository());
-    }
-
     // 다른 저장소를 주입 받을 수 있도록 getInstance 오버로딩
     public static BasicUserService getInstance(UserRepository userRepository) {
         if (instance == null) {

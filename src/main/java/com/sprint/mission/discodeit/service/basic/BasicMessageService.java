@@ -27,11 +27,6 @@ public class BasicMessageService implements MessageService {
         this.messageRepository = messageRepository;  // 저장소 주입
     }
 
-    // 기본 저장소를 FileMessageRepository로 설정
-    public static BasicMessageService getInstance(UserService userService, ChannelService channelService) {
-        return getInstance(userService,channelService,new FileMessageRepository());
-    }
-
     public static BasicMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
         if (instance == null) {
             synchronized (BasicMessageService.class) {
