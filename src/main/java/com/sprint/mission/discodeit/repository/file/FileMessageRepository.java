@@ -13,7 +13,7 @@ public class FileMessageRepository implements MessageRepository {
     private static final File MESSAGE_DIR = new File("output/messagedata");
 
     public FileMessageRepository() {
-        if (!MESSAGE_DIR.exists()) {
+        if (MESSAGE_DIR.exists() == false) {
             MESSAGE_DIR.mkdirs();
         }
     }
@@ -38,7 +38,7 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public Message findById(UUID id) {
         File f = getMessageFile(id);
-        if (!f.exists()) {
+        if (f.exists() == false) {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
@@ -82,11 +82,11 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void delete(UUID id) {
         File f = getMessageFile(id);
-        if (!f.exists() || !f.isFile()) {
+        if (f.exists() == false || f.isFile() == false) {
             throw new NoSuchElementException("No message file found for ID: " + id);
         }
         boolean deleted = f.delete();
-        if (!deleted) {
+        if (deleted == false) {
             throw new RuntimeException("Failed to delete message file for ID: " + id);
         }
     }

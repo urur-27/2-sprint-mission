@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.FileRepository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class FileChannelRepository implements ChannelRepository {
     private static final File CHANNEL_DIR = new File("output/channeldata");
 
     public FileChannelRepository() {
-        if (!CHANNEL_DIR.exists()) {
+        if (CHANNEL_DIR.exists() == false) {
             CHANNEL_DIR.mkdirs();
         }
     }
@@ -38,7 +39,7 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public Channel findById(UUID id) {
         File f = getChannelFile(id);
-        if (!f.exists()) {
+        if (f.exists() == false) {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
@@ -82,11 +83,11 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public void delete(UUID id) {
         File f = getChannelFile(id);
-        if (!f.exists() || !f.isFile()) {
+        if (f.exists() == false || f.isFile() == false) {
             throw new NoSuchElementException("No channel file found for ID: " + id);
         }
         boolean deleted = f.delete();
-        if (!deleted) {
+        if (deleted == false) {
             throw new RuntimeException("Failed to delete channel file for ID: " + id);
         }
     }

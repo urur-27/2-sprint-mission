@@ -9,7 +9,7 @@ public class FileUserRepository implements UserRepository {
     private static final File USER_DIR = new File("output/userdata");
 
     public FileUserRepository() {
-        if (!USER_DIR.exists()) {
+        if (USER_DIR.exists() == false) {
             USER_DIR.mkdirs();
         }
     }
@@ -78,11 +78,11 @@ public class FileUserRepository implements UserRepository {
     @Override
     public void delete(UUID id) {
         File f = getUserFile(id);
-        if (!f.exists() || !f.isFile()) {
+        if (f.exists() == false || f.isFile() == false) {
             throw new NoSuchElementException("No user file found for ID: " + id);
         }
         boolean deleted = f.delete();
-        if (!deleted) {
+        if (deleted == false) {
             throw new RuntimeException("Failed to delete user file for ID: " + id);
         }
     }
