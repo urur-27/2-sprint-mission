@@ -8,7 +8,7 @@ public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data = new HashMap<>();
 
     @Override
-    public void create(User user) {
+    public void upsert(User user) {
         data.put(user.getId(), user);
     }
 

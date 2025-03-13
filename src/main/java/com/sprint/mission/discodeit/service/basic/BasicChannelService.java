@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
@@ -34,7 +33,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public UUID create(String channelName) {
         Channel channel = new Channel(channelName);
-        channelRepository.create(channel);
+        channelRepository.upsert(channel);
         return channel.getId();
     }
 

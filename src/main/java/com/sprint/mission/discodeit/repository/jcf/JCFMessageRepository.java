@@ -9,7 +9,7 @@ public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data = new HashMap<>();
 
     @Override
-    public void create(Message message) {
+    public void upsert(Message message) {
         data.put(message.getId(), message);
     }
 

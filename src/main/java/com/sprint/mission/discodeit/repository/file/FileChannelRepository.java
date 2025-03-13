@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.FileRepository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public class FileChannelRepository implements ChannelRepository {
 
     // Channel 객체를 해당 파일에 직렬화하여 저장
     @Override
-    public void create(Channel channel) {
+    public void upsert(Channel channel) {
         File f = getChannelFile(channel.getId());
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
             oos.writeObject(channel);
@@ -76,7 +75,7 @@ public class FileChannelRepository implements ChannelRepository {
             throw new NoSuchElementException("No channel file found for ID: " + id);
         }
         channel.updateChannel(newChannelName);
-        create(channel);
+        upsert(channel);
     }
 
     // 사용자 삭제

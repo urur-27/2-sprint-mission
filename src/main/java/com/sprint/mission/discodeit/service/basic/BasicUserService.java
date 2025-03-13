@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
@@ -33,7 +32,7 @@ public class BasicUserService implements UserService {
     @Override
     public UUID create(String username, String email) {
         User user = new User(username, email);
-        userRepository.create(user);
+        userRepository.upsert(user);
         return user.getId();
     }
 
