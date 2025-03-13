@@ -13,24 +13,50 @@ import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
+// Simple factory 형식
+// 객체 생성을 관리하는 팩토리 패턴
 public class ServiceFactory {
-    // Simple factory 형식
-    // 객체 생성을 관리하는 팩토리 패턴
-    private static UserService userService;
-    private static ChannelService channelService;
-    private static MessageService messageService;
+    private static volatile ServiceFactory instance; // 완전히 초기화되지 않은 객체를 참조하지 않도록 volatile로 순서 보장
+
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
+
+    private final UserService userService;
+    private final ChannelService channelService;
+    private final MessageService messageService;
 
     private static final String serviceType = "FILE"; // "FILE" 또는 "JCF" 변경 가능
 
-    private static final UserRepository userRepository = createUserRepository();
-    private static final ChannelRepository channelRepository = createChannelRepository();
-    private static final MessageRepository messageRepository = createMessageRepository();
+    // 싱글톤 패턴을 사용하여 여러 인스턴스가 생성되는 상황 방지
+    private ServiceFactory() {
+        this.userRepository = createUserRepository();
+        this.channelRepository = createChannelRepository();
+        this.messageRepository = createMessageRepository();
+
+        this.userService = BasicUserService.getInstance(userRepository);
+        this.channelService = BasicChannelService.getInstance(channelRepository);
+        this.messageService = BasicMessageService.getInstance(getUserService(),getChannelService(),messageRepository);
+    }
+
+    public static synchronized ServiceFactory getInstance() {
+        // 첫 번째 null 체크 (성능 최적화)
+        if (instance == null) {
+            synchronized (ServiceFactory.class) {
+                // 두 번째 null 체크 (동기화 구간 안에서 중복 생성 방지)
+                if (instance == null) {
+                    instance = new ServiceFactory();
+                }
+            }
+        }
+        return instance;
+    }
+
 
     private static UserRepository createUserRepository() {
         switch (serviceType) {
             case "JCF":
                 return new JCFUserRepository();
-            case "FILE":
             default:
                 return new FileUserRepository();
         }
@@ -40,7 +66,6 @@ public class ServiceFactory {
         switch (serviceType) {
             case "JCF":
                 return new JCFChannelRepository();
-            case "FILE":
             default:
                 return new FileChannelRepository();
         }
@@ -50,34 +75,20 @@ public class ServiceFactory {
         switch (serviceType) {
             case "JCF":
                 return new JCFMessageRepository();
-            case "FILE":
             default:
                 return new FileMessageRepository();
         }
     }
 
-    public static UserService getUserService() {
-        if (userService == null) {
-            userService = BasicUserService.getInstance(userRepository);
-        }
+    public UserService getUserService() {
         return userService;
     }
 
-    public static ChannelService getChannelService() {
-        if (channelService == null) {
-            channelService = BasicChannelService.getInstance(channelRepository);
-        }
+    public ChannelService getChannelService() {
         return channelService;
     }
 
-    public static MessageService getMessageService() {
-        if (messageService == null) {
-            messageService = BasicMessageService.getInstance(
-                    getUserService(),
-                    getChannelService(),
-                    messageRepository
-            );
-        }
+    public MessageService getMessageService() {
         return messageService;
     }
 }

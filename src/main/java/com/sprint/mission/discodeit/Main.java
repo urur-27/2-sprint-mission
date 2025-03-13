@@ -15,9 +15,9 @@ public class Main {
     public static void main(String[] args) {
         // 등록, 조회(단건, 다건), 수정, 수정된 데이터 조회, 삭제, 조회를 통해 삭제되었는지 확인
         // switch - case문을 이용해서 동작하는 서비스 설계
-        UserService userService = ServiceFactory.getUserService();
-        ChannelService channelService = ServiceFactory.getChannelService();
-        MessageService messageService = ServiceFactory.getMessageService();
+        UserService userService = ServiceFactory.getInstance().getUserService();
+        ChannelService channelService = ServiceFactory.getInstance().getChannelService();
+        MessageService messageService = ServiceFactory.getInstance().getMessageService();
 
         // 숫자를 입력받아 작동시키기
         Scanner sc = new Scanner(System.in);
