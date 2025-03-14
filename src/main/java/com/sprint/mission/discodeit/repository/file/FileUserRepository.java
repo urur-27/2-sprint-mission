@@ -1,90 +1,112 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.FileRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
-public class FileUserRepository implements UserRepository {
-    private static final File USER_DIR = new File("output/userdata");
+public class FileUserRepository implements UserRepository, FileRepository {
+    private static final Path USER_DIR = Paths.get("output/userdata");
 
     public FileUserRepository() {
-        if (USER_DIR.exists() == false) {
-            USER_DIR.mkdirs();
+        try {
+            createDirectories(USER_DIR);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directory", e);
         }
     }
 
-    // UUID에 대응하는 객체 리턴
-    private File getUserFile(UUID id) {
-        return new File(USER_DIR, id.toString() + ".dat");
+    private Path getUserFile(UUID id) {
+        return USER_DIR.resolve(id.toString() + ".dat");
     }
 
-    // User 객체를 해당 파일에 직렬화하여 저장
+    // 파일 저장을 위한 경로
+    @Override
+    public void createDirectories(Path path) throws IOException {
+        if (Files.exists(path) == false) {
+            Files.createDirectories(path);
+        }
+    }
+
+    // 파일 쓰기
+    @Override
+    public void writeFile(Path path, Object obj) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
+            oos.writeObject(obj);
+        }
+    }
+
+    // 파일 읽어오기
+    @Override
+    public <T> T readFile(Path path, Class<T> clazz) throws IOException, ClassNotFoundException {
+        if (Files.exists(path) == false) {
+            return null;
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+            return clazz.cast(ois.readObject());
+        }
+    }
+
     @Override
     public void upsert(User user) {
-        File f = getUserFile(user.getId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
-            oos.writeObject(user);
+        Path filePath = getUserFile(user.getId());
+        try {
+            writeFile(filePath, user);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to upsert user", e);
         }
     }
 
-    // 파일에서 User 객체를 역직렬화하여 읽어옴
     @Override
     public User findById(UUID id) {
-        File f = getUserFile(id);
-        if (!f.exists()) {
-            return null;
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
-            return (User) ois.readObject();
+        Path filePath = getUserFile(id);
+        try {
+            return readFile(filePath, User.class);
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("Failed to find user", e);
         }
     }
 
+    @Override
     public List<User> findAll() {
-        File[] files = USER_DIR.listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = USER_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
         if (files == null) {
             return new ArrayList<>();
         }
 
         List<User> result = new ArrayList<>();
         for (File f : files) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
-                User user = (User) ois.readObject();
-                result.add(user);
+            try {
+                result.add(readFile(f.toPath(), User.class));
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to find all user", e);
             }
         }
         return result;
     }
 
-    // 사용자 정보 업데이트
     @Override
-    public void update(UUID id, String newUsername, String newEmail) {
+    public void update(UUID id, String newUserName, String newEmail) {
         User user = findById(id);
         if (user == null) {
             throw new NoSuchElementException("No user file found for ID: " + id);
         }
-        user.updateUser(newUsername, newEmail);
+        user.updateUser(newUserName, newEmail);
         upsert(user);
     }
 
-    // 사용자 삭제
     @Override
     public void delete(UUID id) {
-        File f = getUserFile(id);
-        if (f.exists() == false || f.isFile() == false) {
-            throw new NoSuchElementException("No user file found for ID: " + id);
-        }
-        boolean deleted = f.delete();
-        if (deleted == false) {
-            throw new RuntimeException("Failed to delete user file for ID: " + id);
+        Path filePath = getUserFile(id);
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete user file", e);
         }
     }
-
 }
