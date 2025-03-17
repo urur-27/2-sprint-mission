@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,14 +11,10 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private static volatile BasicUserService instance;
     private final UserRepository userRepository;
-
-    // 생성자를 통해 저장소 주입받기
-    private BasicUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     // 다른 저장소를 주입 받을 수 있도록 getInstance 오버로딩
     public static BasicUserService getInstance(UserRepository userRepository) {

@@ -1,5 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
 public class User extends BaseEntity {
     // 유저 이름과 이메일
     private String username;
@@ -9,15 +14,6 @@ public class User extends BaseEntity {
         super(); // BaseEntity 생성자 호출
         this.username = username;
         this.email = email;
-    }
-
-    // Getter 메서드
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     // 업데이트 메서드

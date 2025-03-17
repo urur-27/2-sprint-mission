@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,18 +16,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private static volatile BasicMessageService instance;
-    private final MessageRepository messageRepository;
-
     private final UserService userService;
     private final ChannelService channelService;
+    private final MessageRepository messageRepository;
 
-    private BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.messageRepository = messageRepository;  // 저장소 주입
-    }
+//    private BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
+//        this.userService = userService;
+//        this.channelService = channelService;
+//        this.messageRepository = messageRepository;  // 저장소 주입
+//    }
 
     public static BasicMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
         if (instance == null) {
