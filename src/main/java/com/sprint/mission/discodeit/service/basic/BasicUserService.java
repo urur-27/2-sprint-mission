@@ -26,18 +26,6 @@ public class BasicUserService implements UserService {
     BinaryContentRepository BinaryContentRepository;
     UserStatusRepository UserStatusRepository;
 
-    // 다른 저장소를 주입 받을 수 있도록 getInstance 오버로딩
-    public static BasicUserService getInstance(UserRepository userRepository) {
-        if (instance == null) {
-            synchronized (BasicUserService.class) {
-                if (instance == null) {
-                    instance = new BasicUserService(userRepository);
-                }
-            }
-        }
-        return instance;
-    }
-
     @Override
     public UUID create(UserCreateRequest request) {
         // username과 email의 중복 검사
@@ -57,25 +45,10 @@ public class BasicUserService implements UserService {
                 request.email(),
                 request.password()
         );
-
         userRepository.upsert(user);
 
-        // 프로필 이미지 저장 (선택적)
-        if (request.profileImage() != null) {
-            BinaryContent profileImage = new BinaryContent(
-                    user.getId(),
-                    null, // messageId는 없음 (프로필 이미지용)
-                    request.profileImage(),
-                    "image/png",  // MIME 타입 (추후 동적 설정 가능)
-                    request.profileImage().length
-            );
-            BinaryContentRepository.save(profileImage);
-        }
-
-        // UserStatus 저장. 문제없나?
+        saveProfileImage(user.getId(), request.profileImage());
         UserStatusRepository.save(request.status());
-        // UserStatus 생성
-//        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
 
         return user.getId();
     }
@@ -93,13 +66,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserResponse> findAll() {
-        List<User> users = userRepository.findAll();
-
-        return users.stream()
-                .map(user -> {
-                    boolean isOnline = UserStatusRepository.isUserOnline(user.getId());
-                    return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), isOnline);
-                })
+        return userRepository.findAll().stream()
+                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), UserStatusRepository.isUserOnline(user.getId())))
                 .toList();
     }
 
@@ -114,19 +82,8 @@ public class BasicUserService implements UserService {
         // 사용자 정보 업데이트 (이름 & 이메일)
         userRepository.update(request.userId(), request.username(), request.email(), request.password());
 
-        // 프로필 이미지가 존재하면 업데이트 수행
-        if (request.profileImage() != null) {
-            BinaryContent profileImage = new BinaryContent(
-                    request.userId(),
-                    null, // messageId 없음 (프로필 이미지용)
-                    request.profileImage(),
-                    "image/png",  // MIME 타입 (추후 동적 설정 가능)
-                    request.profileImage().length
-            );
-            BinaryContentRepository.save(profileImage);
-        }
+        saveProfileImage(request.userId(), request.profileImage());
     }
-
 
     @Override
     public void delete(UUID id) {
@@ -142,4 +99,11 @@ public class BasicUserService implements UserService {
         // 최종적으로 사용자 삭제
         userRepository.delete(id);
     }
+
+    private void saveProfileImage(UUID userId, byte[] profileImage) {
+        if (profileImage != null) {
+            BinaryContentRepository.save(new BinaryContent(userId, null, profileImage, "image/png", profileImage.length));
+        }
+    }
+
 }
