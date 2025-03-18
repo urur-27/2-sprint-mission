@@ -23,10 +23,10 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public void update(UUID id, String newUsername, String newEmail) {
+    public void update(UUID id, String newUsername, String newEmail, String newPassword) {
         User user = data.get(id);
         if(user != null){
-            user.updateUser(newUsername, newEmail);
+            user.updateUser(newUsername, newEmail, newPassword);
         }
     }
 

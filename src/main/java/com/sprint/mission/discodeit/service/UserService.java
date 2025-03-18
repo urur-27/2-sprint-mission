@@ -1,14 +1,18 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.DTO.UserCreateRequest;
+import com.sprint.mission.discodeit.DTO.UserResponse;
+import com.sprint.mission.discodeit.DTO.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
     //CRUD 기능을 선언
-    UUID create(String username, String email); // user 생성
-    User findById(UUID id); // 읽기
-    List<User> findAll(); // 모두 읽어서 리스트 형으로 가져오기
-    void update(UUID id, String username, String email); // 수정
-    void delete(UUID id); // 삭제
+    UUID create(UserCreateRequest request);  // User 생성 (선택적 프로필 이미지 포함)
+    UserResponse findById(UUID id);  // User 조회 (패스워드 제외 & 온라인 상태 포함)
+    List<UserResponse> findAll();  // 모든 User 조회 (패스워드 제외 & 온라인 상태 포함)
+    void update(UserUpdateRequest request);  // User 정보 수정 (선택적 프로필 이미지 변경)
+    void delete(UUID id);  // User 삭제 (BinaryContent, UserStatus 같이 삭제)
+
 }

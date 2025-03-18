@@ -94,12 +94,12 @@ public class FileUserRepository implements UserRepository, FileRepository {
     }
 
     @Override
-    public void update(UUID id, String newUserName, String newEmail) {
+    public void update(UUID id, String newUserName, String newEmail, String newPassword) {
         User user = findById(id);
         if (user == null) {
             throw new NoSuchElementException("No user file found for ID: " + id);
         }
-        user.updateUser(newUserName, newEmail);
+        user.updateUser(newUserName, newEmail, newPassword);
         upsert(user);
     }
 
