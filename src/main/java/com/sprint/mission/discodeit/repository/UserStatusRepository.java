@@ -5,13 +5,12 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserStatusRepository {
 
     // 저장 또는 업데이트 (Create/Update)
-    void save(UserStatus userStatus);
+    void upsert(UserStatus userStatus);
 
     // 특정 사용자가 온라인인지 확인
     boolean isUserOnline(UUID userId);
