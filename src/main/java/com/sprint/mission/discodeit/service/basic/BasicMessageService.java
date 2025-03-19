@@ -39,7 +39,7 @@ public class BasicMessageService implements MessageService {
                         attachment.size()
                 );
 
-                binaryContentRepository.create(binaryContent);
+                binaryContentRepository.upsert(binaryContent);
             }
         }
 

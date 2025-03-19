@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.DTO.UserCreateRequest;
-import com.sprint.mission.discodeit.DTO.UserResponse;
-import com.sprint.mission.discodeit.DTO.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -13,7 +12,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -21,7 +19,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
-    private static volatile BasicUserService instance;
     private final UserRepository userRepository;
     BinaryContentRepository BinaryContentRepository;
     UserStatusRepository UserStatusRepository;
@@ -32,10 +29,10 @@ public class BasicUserService implements UserService {
         // 모든 데이터를 찾아서 그곳에 username, 혹은 email 중복이 있는지 체크
         for (User user : userRepository.findAll()) {
             if (user.getUsername().equals(request.username())) {
-                throw new IllegalArgumentException("이미 존재하는 username입니다.");
+                throw new IllegalArgumentException("The username already exists.");
             }
             if (user.getEmail().equals(request.email())) {
-                throw new IllegalArgumentException("이미 존재하는 email입니다.");
+                throw new IllegalArgumentException("This email already exists.");
             }
         }
 
@@ -48,7 +45,7 @@ public class BasicUserService implements UserService {
         userRepository.upsert(user);
 
         saveProfileImage(user.getId(), request.profileImage());
-        UserStatusRepository.save(request.status());
+        UserStatusRepository.upsert(request.status());
 
         return user.getId();
     }
@@ -57,7 +54,7 @@ public class BasicUserService implements UserService {
     public UserResponse findById(UUID id) {
         User user = userRepository.findById(id);
         if (user == null) {
-            throw new NoSuchElementException("해당 ID의 유저를 찾지 못했습니다. : " + id);
+            throw new NoSuchElementException("Could not find user with that ID. : " + id);
         }
         boolean isOnline = UserStatusRepository.isUserOnline(id);
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), isOnline);
@@ -76,7 +73,7 @@ public class BasicUserService implements UserService {
         // 기존 유저 정보 조회
         User user = userRepository.findById(request.userId());
         if (user == null) {
-            throw new NoSuchElementException("해당 ID의 유저를 찾을 수 없습니다: " + request.userId());
+            throw new NoSuchElementException("Could not find user with that ID. : " + request.userId());
         }
 
         // 사용자 정보 업데이트 (이름 & 이메일)
@@ -90,7 +87,7 @@ public class BasicUserService implements UserService {
         // 사용자 존재 여부 확인
         User user = userRepository.findById(id);
         if (user == null) {
-            throw new NoSuchElementException("해당 ID의 유저를 찾을 수 없습니다: " + id);
+            throw new NoSuchElementException("Could not find user with that ID. : " + id);
         }
 
         // 관련 데이터 삭제 (프로필 이미지, 유저 상태)
@@ -102,8 +99,7 @@ public class BasicUserService implements UserService {
 
     private void saveProfileImage(UUID userId, byte[] profileImage) {
         if (profileImage != null) {
-            BinaryContentRepository.save(new BinaryContent(userId, null, profileImage, "image/png", profileImage.length));
+            BinaryContentRepository.upsert(new BinaryContent(userId, null, profileImage, "image/png", profileImage.length));
         }
     }
-
 }

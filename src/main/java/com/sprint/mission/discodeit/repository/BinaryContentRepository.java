@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface BinaryContentRepository {
     // 파일 저장 (Create)
-    void create(BinaryContent binaryContent);
+    void upsert(BinaryContent binaryContent);
 
     // 모든 파일 조회 (Read)
     List<BinaryContent> findAll();
