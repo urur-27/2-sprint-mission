@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.DTO.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.ServiceFactory;
@@ -15,13 +17,18 @@ import java.util.UUID;
 @SpringBootApplication
 public class DiscodeitApplication {
     static UUID setupUser(UserService userService) {
-        UUID userId = userService.create("woody", "woody@codeit.com");
+        // UserCreateRequest DTO 생성
+        UserCreateRequest request = new UserCreateRequest("woody", "woody@codeit.com", "woody@codeit.com", null, null);
+
+        // 변경된 create 메서드 호출
+        UUID userId = userService.create(request);
+
         System.out.println("유저 생성: " + userId);
         return userId;
     }
 
     static UUID setupChannel(ChannelService channelService) {
-        UUID channelId = channelService.create("공지");
+        UUID channelId = channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
         System.out.println("채널 생성: " + channelId);
         return channelId;
     }

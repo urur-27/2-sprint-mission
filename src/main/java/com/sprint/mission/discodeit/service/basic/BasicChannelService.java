@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.service.basic;
 
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,28 +15,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
-    private static volatile BasicChannelService instance;
     private final ChannelRepository channelRepository;
 
-//    // 생성자를 통해 저장소 주입받기
-//    private BasicChannelService(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
-
-    // 다른 저장소를 주입 받을 수 있도록 getInstance 오버로딩
-    public static BasicChannelService getInstance(ChannelRepository channelRepository) {
-        if (instance == null) {
-            synchronized (BasicChannelService.class) {
-                if (instance == null) {
-                    instance = new BasicChannelService(channelRepository);
-                }
-            }
-        }
-        return instance;
-    }
     @Override
-    public UUID create(String channelName) {
-        Channel channel = new Channel(channelName);
+    public UUID create(ChannelType type, String channelName, String description) {
+        Channel channel = new Channel(type, channelName, description);
         channelRepository.upsert(channel);
         return channel.getId();
     }
@@ -56,8 +39,8 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void update(UUID id, String channelName) {
-        channelRepository.update(id, channelName);
+    public void update(UUID id, ChannelType type,String channelName, String description) {
+        channelRepository.update(id, type, channelName, description);
     }
 
     @Override

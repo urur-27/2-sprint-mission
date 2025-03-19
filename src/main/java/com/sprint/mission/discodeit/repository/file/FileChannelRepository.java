@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.FileRepository;
 import org.springframework.stereotype.Repository;
@@ -96,12 +97,12 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
     }
 
     @Override
-    public void update(UUID id, String newChannelName) {
+    public void update(UUID id, ChannelType type, String newChannelName, String description) {
         Channel channel = findById(id);
         if (channel == null) {
             throw new NoSuchElementException("No channel file found for ID: " + id);
         }
-        channel.updateChannel(newChannelName);
+        channel.updateChannel(type, newChannelName, description);
         upsert(channel);
     }
 

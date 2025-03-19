@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.util.*;
@@ -24,12 +25,11 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void update(UUID id, String newChannelname) {
+    public void update(UUID id, ChannelType type, String newChannelname, String description) {
         Channel channel = data.get(id);
         if(channel != null){
-            channel.updateChannel(newChannelname);
+            channel.updateChannel(type, newChannelname, description);
         }
-
     }
 
     @Override

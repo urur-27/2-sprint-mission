@@ -2,19 +2,36 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
+
 @Getter
 public class Channel extends BaseEntity {
-    // 채널 명
-    private String name;
 
-    public Channel(String name) {
+    private ChannelType type;
+    private String name;
+    private String description;
+
+    public Channel(ChannelType type, String name, String description) {
         super();
+        this.type = type;
         this.name = name;
+        this.description = description;
     }
 
     // 채널 이름 변경
-    public void updateChannel(String name) {
-        this.name = name;
-        updateTimestamp();
+    public void updateChannel(ChannelType type,String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            updateTimestamp();
+        }
     }
 }

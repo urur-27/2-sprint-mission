@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.DTO.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -18,34 +19,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private static volatile BasicMessageService instance;
-    private final UserService userService;
-    private final ChannelService channelService;
     private final MessageRepository messageRepository;
-
-//    private BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-//        this.userService = userService;
-//        this.channelService = channelService;
-//        this.messageRepository = messageRepository;  // 저장소 주입
-//    }
-
-    public static BasicMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-        if (instance == null) {
-            synchronized (BasicMessageService.class) {
-                if (instance == null) {
-                    instance = new BasicMessageService(userService, channelService, messageRepository);
-                }
-            }
-        }
-        return instance;
-    }
 
     @Override
     public UUID create(String content, UUID senderId, UUID channelId) {
-        User sender = findUserById(senderId);
-        Channel channel = findChannelById(channelId);
 
-        Message message = new Message(content, sender, channel);
+        Message message = new Message(content, senderId, channelId);
         messageRepository.upsert(message);
         return message.getId();
     }
@@ -75,15 +54,4 @@ public class BasicMessageService implements MessageService {
         messageRepository.delete(id);
     }
 
-    // User ID 검증
-    private User findUserById(UUID id) {
-        return Optional.ofNullable(userService.findById(id))
-                .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
-    }
-
-    // Channel ID 검증
-    private Channel findChannelById(UUID id) {
-        return Optional.ofNullable(channelService.findById(id))
-                .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
-    }
 }
