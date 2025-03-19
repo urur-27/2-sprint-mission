@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface BinaryContentRepository {
     // 파일 저장 (Create)
-    void save(BinaryContent binaryContent);
+    void create(BinaryContent binaryContent);
 
     // 모든 파일 조회 (Read)
     List<BinaryContent> findAll();
@@ -20,7 +20,7 @@ public interface BinaryContentRepository {
     List<BinaryContent> findByUserId(UUID userId);
 
     // 특정 Message에 첨부된 파일 조회
-    List<BinaryContent> findByMessageId(UUID messageId);
+    List<BinaryContent> findAllByMessageId(UUID messageId);
 
     // 특정 User의 프로필 이미지 조회 (messageId == null)
     Optional<BinaryContent> findProfileImageByUserId(UUID userId);
