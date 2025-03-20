@@ -36,16 +36,19 @@ public class BasicUserService implements UserService {
             }
         }
 
+        UUID profileImage =saveProfileImage(request.profileImage());
+        UserStatusRepository.upsert(request.status());
+
         // User 생성
         User user = new User(
                 request.username(),
                 request.email(),
-                request.password()
+                request.password(),
+                profileImage
         );
         userRepository.upsert(user);
 
-        saveProfileImage(user.getId(), request.profileImage());
-        UserStatusRepository.upsert(request.status());
+
 
         return user.getId();
     }
@@ -77,9 +80,9 @@ public class BasicUserService implements UserService {
         }
 
         // 사용자 정보 업데이트 (이름 & 이메일)
-        userRepository.update(request.userId(), request.username(), request.email(), request.password());
+        userRepository.update(request.userId(), request.username(), request.email(), request.password(), null);
 
-        saveProfileImage(request.userId(), request.profileImage());
+        saveProfileImage(request.profileImage());
     }
 
     @Override
@@ -97,9 +100,10 @@ public class BasicUserService implements UserService {
         userRepository.delete(id);
     }
 
-    private void saveProfileImage(UUID userId, byte[] profileImage) {
-        if (profileImage != null) {
-            BinaryContentRepository.upsert(new BinaryContent(userId, null, profileImage, "image/png", profileImage.length));
+    private UUID saveProfileImage(byte[] profileImage) {
+        if (profileImage == null || profileImage.length == 0) {
+            throw new IllegalArgumentException("Profile image cannot be null or empty");
         }
+        return BinaryContentRepository.upsert(new BinaryContent(profileImage, "image/png", profileImage.length));
     }
 }

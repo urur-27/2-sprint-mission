@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -11,10 +10,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,23 +21,28 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public UUID create(MessageCreateRequest request) {
-        Message message = new Message(request.content(), request.senderId(), request.channelId());
-        messageRepository.upsert(message);
-
         // 첨부파일 등록
-        if (request.attachments() != null) {
-            for (BinaryContentCreateRequest attachment : request.attachments()) {
-                BinaryContent binaryContent = new BinaryContent(
-                        request.senderId(),
-                        message.getId(),
-                        attachment.data(),
-                        attachment.contentType(),
-                        attachment.size()
-                );
+        List<UUID> attachmentIds = (request.attachments() != null)
+                ? request.attachments().stream()
+                .map(attachment -> {
+                    BinaryContent binaryContent = new BinaryContent(
+                            attachment.data(),
+                            attachment.contentType(),
+                            attachment.size()
+                    );
+                    return binaryContentRepository.upsert(binaryContent); // 저장 후 UUID 반환
+                })
+                .collect(Collectors.toList())
+                : List.of();
 
-                binaryContentRepository.upsert(binaryContent);
-            }
-        }
+        Message message = new Message(
+                request.content(),
+                request.senderId(),
+                request.channelId(),
+                attachmentIds
+        );
+
+        messageRepository.upsert(message);
 
         return message.getId();
     }
