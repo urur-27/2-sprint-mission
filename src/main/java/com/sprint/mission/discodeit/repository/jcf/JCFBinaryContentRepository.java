@@ -24,22 +24,17 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAllByMessageId(UUID messageId) {
+    public List<BinaryContent> findAllByIdIn(UUID messageId) {
         return List.of();
     }
 
     @Override
-    public Optional<BinaryContent> findAllByUserId(UUID userId) {
-        return Optional.empty();
-    }
-
-    @Override
-    public void deleteProfileImageByUserId(UUID userId) {
-
-    }
-
-    @Override
     public void deleteByMessageId(UUID messageId) {
+
+    }
+
+    @Override
+    public void delete(UUID id) {
 
     }
 }

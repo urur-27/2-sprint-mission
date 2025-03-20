@@ -94,7 +94,7 @@ public class BasicUserService implements UserService {
         }
 
         // 관련 데이터 삭제 (프로필 이미지, 유저 상태)
-        BinaryContentRepository.deleteProfileImageByUserId(id);
+        BinaryContentRepository.delete(user.getProfileId());
         UserStatusRepository.deleteByUserId(id);
         // 최종적으로 사용자 삭제
         userRepository.delete(id);
