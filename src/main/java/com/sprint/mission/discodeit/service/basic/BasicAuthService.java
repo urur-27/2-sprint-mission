@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.impl;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserLoginRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
@@ -8,10 +8,10 @@ import com.sprint.mission.discodeit.service.AuthService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthServiceImpl implements AuthService {
+public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
-    public AuthServiceImpl(UserRepository userRepository) {
+    public BasicAuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
