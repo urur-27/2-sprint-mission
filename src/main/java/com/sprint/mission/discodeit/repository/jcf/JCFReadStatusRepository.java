@@ -1,45 +1,56 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class JCFReadStatusRepository implements BinaryContentRepository {
+public class JCFReadStatusRepository implements ReadStatusRepository {
+
+    private final Map<UUID, ReadStatus> data = new HashMap<>();
+
     @Override
-    public UUID upsert(BinaryContent binaryContent) {
-        return null;
+    public void upsert(ReadStatus readStatus) {
+        data.put(readStatus.getId(), readStatus);
     }
 
     @Override
-    public List<BinaryContent> findAll() {
-        return List.of();
+    public List<UUID> findUsersByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(r -> r.getChannelId().equals(channelId))
+                .map(ReadStatus::getUserId)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public BinaryContent findById(UUID userId) {
-        return null;
+    public ReadStatus findById(UUID readStatusId) {
+        return data.get(readStatusId);
     }
 
     @Override
-    public List<BinaryContent> findAllByMessageId(UUID messageId) {
-        return List.of();
+    public List<ReadStatus> findAllByUser(UUID userId) {
+        return data.values().stream()
+                .filter(r -> r.getUserId().equals(userId))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<BinaryContent> findAllByUserId(UUID userId) {
-        return Optional.empty();
+    public void updateLastReadAt(UUID userId, UUID channelId, Instant lastReadAt) {
+        data.values().stream()
+                .filter(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId))
+                .forEach(rs -> rs.updateReadStatus(lastReadAt));
+    }
+
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+        data.values().removeIf(rs -> rs.getChannelId().equals(channelId));
     }
 
     @Override
-    public void deleteProfileImageByUserId(UUID userId) {
-
-    }
-
-    @Override
-    public void deleteByMessageId(UUID messageId) {
-
+    public void delete(UUID readStatusId) {
+        data.remove(readStatusId);
     }
 }
