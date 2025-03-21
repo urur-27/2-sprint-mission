@@ -1,7 +1,4 @@
-package com.sprint.mission.discodeit.dto;
-
-import java.util.List;
-import java.util.UUID;
+package com.sprint.mission.discodeit.dto2;
 
 public record PublicChannelCreateRequest(
         String name,

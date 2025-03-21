@@ -1,17 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
-import com.sprint.mission.discodeit.dto.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto2.UserCreateRequest;
+import com.sprint.mission.discodeit.dto2.UserResponse;
+import com.sprint.mission.discodeit.dto2.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -20,8 +23,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    BinaryContentRepository BinaryContentRepository;
-    UserStatusRepository UserStatusRepository;
+    private final BinaryContentRepository BinaryContentRepository;
+    private final UserStatusRepository UserStatusRepository;
 
     @Override
     public UUID create(UserCreateRequest request) {
@@ -36,8 +39,7 @@ public class BasicUserService implements UserService {
             }
         }
 
-        UUID profileImage =saveProfileImage(request.profileImage());
-        UserStatusRepository.upsert(request.status());
+        UUID profileImage = saveProfileImage(request.profileImage());
 
         // User 생성
         User user = new User(
@@ -48,7 +50,8 @@ public class BasicUserService implements UserService {
         );
         userRepository.upsert(user);
 
-
+        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
+        UserStatusRepository.upsert(userStatus);
 
         return user.getId();
     }
@@ -102,7 +105,8 @@ public class BasicUserService implements UserService {
 
     private UUID saveProfileImage(byte[] profileImage) {
         if (profileImage == null || profileImage.length == 0) {
-            throw new IllegalArgumentException("Profile image cannot be null or empty");
+            return null;
+//            throw new IllegalArgumentException("Profile image cannot be null or empty");
         }
         return BinaryContentRepository.upsert(new BinaryContent(profileImage, "image/png", profileImage.length));
     }

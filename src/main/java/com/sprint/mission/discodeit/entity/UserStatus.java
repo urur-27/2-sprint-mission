@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
 public class UserStatus extends BaseEntity {
     private UUID userId;
     private Instant lastAccessedAt;

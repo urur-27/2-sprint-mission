@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
 public class User extends BaseEntity {
     // 유저 이름과 이메일
     private String username;
