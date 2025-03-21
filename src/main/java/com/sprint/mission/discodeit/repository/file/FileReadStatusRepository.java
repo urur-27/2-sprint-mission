@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.FileRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -18,10 +19,10 @@ import java.util.UUID;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository, FileRepository {
+    private final Path READSTATUS_DIR;
 
-    private static final Path READSTATUS_DIR = Paths.get("output/readstatusdata");
-
-    public FileReadStatusRepository() {
+    public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+        this.READSTATUS_DIR = Paths.get(fileDirectory, "readstatusdata");
         try {
             createDirectories(READSTATUS_DIR);
         } catch (IOException e) {

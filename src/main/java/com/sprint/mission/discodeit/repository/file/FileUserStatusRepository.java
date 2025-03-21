@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.FileRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -19,9 +20,10 @@ import java.util.stream.Collectors;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserStatusRepository implements UserStatusRepository, FileRepository {
-    private static final Path USERSTATUS_DIR = Paths.get("output/userstatusdata");
+    private final Path USERSTATUS_DIR;
 
-    public FileUserStatusRepository() {
+    public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+        this.USERSTATUS_DIR = Paths.get(fileDirectory, "userstatusdata");
         try {
             createDirectories(USERSTATUS_DIR);
         } catch (IOException e) {

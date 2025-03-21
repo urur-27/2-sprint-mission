@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.FileRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -19,9 +20,10 @@ import java.util.UUID;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository, FileRepository {
-    private static final Path MESSAGE_DIR = Paths.get("output/messagedata");
+    private final Path MESSAGE_DIR;
 
-    public FileMessageRepository() {
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+        this.MESSAGE_DIR = Paths.get(fileDirectory, "messagedata");
         try {
             createDirectories(MESSAGE_DIR);
         } catch (IOException e) {
