@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,11 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     public boolean isUserOnline(UUID userId) {
         UserStatus status = data.get(userId);
         return status != null && status.isCurrentOnline();
+    }
+
+    @Override
+    public UserStatus findByUserId(UUID userId) {
+        return data.get(userId);
     }
 
     @Override

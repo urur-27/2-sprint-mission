@@ -41,7 +41,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus findById(UUID id) {
-        return null;
+        return userStatusRepository.findByUserId(id);
     }
 
     @Override

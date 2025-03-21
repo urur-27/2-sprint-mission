@@ -14,6 +14,7 @@ public interface UserStatusRepository {
 
     // 특정 사용자가 온라인인지 확인
     boolean isUserOnline(UUID userId);
+    UserStatus findByUserId(UUID userId);
 
     // 온라인 상태인 사용자 목록 조회
     List<UserStatus> findAllOnlineUsers();

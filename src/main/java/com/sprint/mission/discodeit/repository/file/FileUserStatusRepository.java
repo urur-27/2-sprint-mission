@@ -101,7 +101,8 @@ public class FileUserStatusRepository implements UserStatusRepository, FileRepos
         }
     }
 
-    private UserStatus findByUserId(UUID userId) {
+    @Override
+    public UserStatus findByUserId(UUID userId) {
         Path filePath = getFile(userId);
         try {
             return readFile(filePath, UserStatus.class);
