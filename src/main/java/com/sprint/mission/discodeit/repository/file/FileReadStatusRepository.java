@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.FileRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository, FileRepository {
 
     private static final Path READSTATUS_DIR = Paths.get("output/readstatusdata");
@@ -115,30 +117,30 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
         return results;
     }
 
-        @Override
-        public void updateLastReadAt(UUID userId, UUID channelId, Instant lastReadAt) {
-            findAllByUser(userId).forEach(rs -> {
-                if (rs.getChannelId().equals(channelId)) {
-                    rs.updateReadStatus(lastReadAt);
-                    upsert(rs);
-                }
-            });
-        }
-
-        @Override
-        public void deleteByChannelId(UUID channelId) {
-            findAll().forEach(rs -> {
-                if (rs.getChannelId().equals(channelId)) delete(rs.getId());
-            });
-        }
-
-        @Override
-        public void delete(UUID readStatusId) {
-            Path filePath = getFile(readStatusId);
-            try {
-                Files.deleteIfExists(filePath);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to delete read status", e);
+    @Override
+    public void updateLastReadAt(UUID userId, UUID channelId, Instant lastReadAt) {
+        findAllByUser(userId).forEach(rs -> {
+            if (rs.getChannelId().equals(channelId)) {
+                rs.updateReadStatus(lastReadAt);
+                upsert(rs);
             }
+        });
+    }
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+        findAll().forEach(rs -> {
+            if (rs.getChannelId().equals(channelId)) delete(rs.getId());
+        });
+    }
+
+    @Override
+    public void delete(UUID readStatusId) {
+        Path filePath = getFile(readStatusId);
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete read status", e);
         }
     }
+}
