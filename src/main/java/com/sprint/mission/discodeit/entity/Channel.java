@@ -20,17 +20,12 @@ public class Channel extends BaseEntity {
 
     // 채널 이름 변경
     public void updateChannel(ChannelType type,String newName, String newDescription) {
-        boolean anyValueUpdated = false;
         if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
-            anyValueUpdated = true;
+            updateTimestamp();
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
             updateTimestamp();
         }
     }
