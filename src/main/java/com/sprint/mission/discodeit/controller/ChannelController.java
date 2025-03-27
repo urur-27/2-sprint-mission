@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto2.*;
+import com.sprint.mission.discodeit.dto2.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto2.response.ApiResponse;
+import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

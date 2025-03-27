@@ -1,22 +1,17 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto2.FileMetaResponse;
+import com.sprint.mission.discodeit.dto2.response.FileMetaResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequestMapping("/api/binaryContent")

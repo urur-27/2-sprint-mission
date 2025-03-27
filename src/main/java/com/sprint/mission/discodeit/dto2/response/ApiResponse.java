@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto2;
+package com.sprint.mission.discodeit.dto2.response;
 
 public class ApiResponse<T> {
     private String message;

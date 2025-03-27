@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto2.UserCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.UserDto;
-import com.sprint.mission.discodeit.dto2.UserResponse;
-import com.sprint.mission.discodeit.dto2.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
+import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

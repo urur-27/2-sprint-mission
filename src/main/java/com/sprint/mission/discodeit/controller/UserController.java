@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto2.*;
+import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
+import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto2.response.ApiResponse;
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;

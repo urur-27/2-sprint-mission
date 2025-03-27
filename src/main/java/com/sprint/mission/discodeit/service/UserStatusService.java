@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto2.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto2.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto2.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.time.Instant;

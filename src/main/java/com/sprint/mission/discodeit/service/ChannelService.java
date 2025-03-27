@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto2.ChannelResponse;
-import com.sprint.mission.discodeit.dto2.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto2.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto2.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto2.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 
 import java.util.List;
 import java.util.UUID;

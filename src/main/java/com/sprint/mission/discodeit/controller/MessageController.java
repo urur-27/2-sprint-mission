@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto2.ApiResponse;
-import com.sprint.mission.discodeit.dto2.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto2.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto2.response.ApiResponse;
+import com.sprint.mission.discodeit.dto2.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
