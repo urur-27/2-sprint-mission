@@ -19,17 +19,19 @@ public class ChannelController {
     // 공개 채널 생성
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     public ResponseEntity<String> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
-        channelService.createPublicChannel(request);
+        UUID id = channelService.createPublicChannel(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Public channel \"" + request.name() + "\" has been created.");
+                .body("Public channel \"" + request.name() + "\" has been created." +
+                        "\\n UUID:" + id );
     }
 
     // 비공개 채널 생성
     @RequestMapping(value = "/private", method = RequestMethod.POST)
     public ResponseEntity<String> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
-        channelService.createPrivateChannel(request);
+        UUID id = channelService.createPrivateChannel(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Private channel has been created.\nuserIds : \"" + request.userIds() + "\".");
+                .body("Private channel has been created.\nuserIds : \"" + request.userIds() + "\"." +
+                        "\\n UUID:" + id );
     }
 
     // 공개 채널 정보 수정

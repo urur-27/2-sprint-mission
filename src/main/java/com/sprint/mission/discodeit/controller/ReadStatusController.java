@@ -22,9 +22,10 @@ public class ReadStatusController {
     // 1. 특정 채널의 메시지 수신 정보 생성
     @RequestMapping(value = "/channel", method = RequestMethod.POST)
     public ResponseEntity<String> createReceipts(@RequestBody ReadStatusCreateRequest request) {
-        readStatusService.create(request);
+        UUID id = readStatusService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Receipt info created for channel: " + request.channelId());
+                .body("Receipt info created for channel: " + request.channelId()+
+                        "\\n UUID : " + id);
     }
 
     // 2. 특정 채널의 메시지 수신 정보 수정

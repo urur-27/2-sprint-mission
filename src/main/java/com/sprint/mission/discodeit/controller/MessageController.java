@@ -23,9 +23,10 @@ public class MessageController {
     // 메시지 보내기
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<String> sendMessage(@RequestBody MessageCreateRequest request) {
-        messageService.create(request);
+        UUID id = messageService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Message has been sent.");
+                .body("Message has been sent." +
+                        "\\n UUID : " + id);
     }
 
     // 메시지 수정
