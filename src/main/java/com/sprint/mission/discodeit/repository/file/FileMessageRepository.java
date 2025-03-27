@@ -12,10 +12,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
 
@@ -96,6 +93,10 @@ public class FileMessageRepository implements MessageRepository, FileRepository 
                 result.add(message);
             }
         }
+
+        // createdAt 기준 최신순으로 정렬.
+        result.sort(Comparator.comparing(Message::getCreatedAt).reversed());
+
         return result;
     }
 

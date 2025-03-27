@@ -59,8 +59,8 @@ public class BasicChannelService implements ChannelService {
         // 해당 채널의 가장 최근 메시지 시간 조회
         Instant lastMessageTime = messageRepository.findAll().stream()
                 .filter(msg -> msg.getChannelId().equals(id))
+                .findFirst()
                 .map(Message::getCreatedAt)
-                .max(Instant::compareTo)
                 .orElse(null);
 
         // PRIVATE 채널인 경우 참여한 User ID 조회
