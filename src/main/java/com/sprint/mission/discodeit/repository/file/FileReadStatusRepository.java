@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
+
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository, FileRepository {
@@ -27,7 +29,7 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
     }
 
     private Path getFile(UUID id) {
-        return READSTATUS_DIR.resolve(id.toString() + ".dat");
+        return READSTATUS_DIR.resolve(id.toString() + FILE_EXTENSION);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
     }
 
     private List<ReadStatus> findAll() {
-        File[] files = READSTATUS_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = READSTATUS_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         List<ReadStatus> results = new ArrayList<>();
         if (files != null) {
             for (File file : files) {

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
+
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileChannelRepository implements ChannelRepository, FileRepository {
@@ -28,7 +30,7 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
     }
 
     private Path getChannelFile(UUID id) {
-        return CHANNEL_DIR.resolve(id.toString() + ".dat");
+        return CHANNEL_DIR.resolve(id.toString() + FILE_EXTENSION);
     }
 
     // 파일 저장을 위한 경로
@@ -80,7 +82,7 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
 
     @Override
     public List<Channel> findAll() {
-        File[] files = CHANNEL_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = CHANNEL_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         if (files == null) {
             return new ArrayList<>();
         }

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
+
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository, FileRepository {
@@ -29,7 +31,7 @@ public class FileMessageRepository implements MessageRepository, FileRepository 
 
     // UUID에 대응하는 객체 리턴
     private Path getMessageFile(UUID id) {
-        return MESSAGE_DIR.resolve(id.toString() + ".dat");
+        return MESSAGE_DIR.resolve(id.toString() + FILE_EXTENSION);
     }
 
     // 파일 저장을 위한 경로
@@ -82,7 +84,7 @@ public class FileMessageRepository implements MessageRepository, FileRepository 
     }
 
     public List<Message> findAll() {
-        File[] files = MESSAGE_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = MESSAGE_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         if (files == null) {
             return new ArrayList<>();
         }

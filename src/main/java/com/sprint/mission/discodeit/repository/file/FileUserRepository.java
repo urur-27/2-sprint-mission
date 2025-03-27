@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
+
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserRepository implements UserRepository, FileRepository {
@@ -25,7 +27,7 @@ public class FileUserRepository implements UserRepository, FileRepository {
     }
 
     private Path getUserFile(UUID id) {
-        return USER_DIR.resolve(id.toString() + ".dat");
+        return USER_DIR.resolve(id.toString() + FILE_EXTENSION);
     }
 
     // 파일 저장을 위한 경로
@@ -77,7 +79,7 @@ public class FileUserRepository implements UserRepository, FileRepository {
 
     @Override
     public List<User> findAll() {
-        File[] files = USER_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = USER_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         if (files == null) {
             return new ArrayList<>();
         }

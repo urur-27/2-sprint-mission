@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
+
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileBinaryContentRepository implements BinaryContentRepository, FileRepository {
@@ -28,7 +30,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
     }
 
     private Path getFile(UUID id) {
-        return CONTENT_DIR.resolve(id + ".dat");
+        return CONTENT_DIR.resolve(id + FILE_EXTENSION);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
 
     @Override
     public List<BinaryContent> findAll() {
-        File[] files = CONTENT_DIR.toFile().listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = CONTENT_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         List<BinaryContent> results = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
