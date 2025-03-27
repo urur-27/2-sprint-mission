@@ -19,8 +19,9 @@ public class BaseEntity implements Serializable {
 
     public BaseEntity() {
         this.id = UUID.randomUUID(); // 무작위 UUID로 생성자에서 초기화
-        this.createdAt = Instant.now(); // 생성 시간 저장 (UTC 기준)
-        this.updatedAt = Instant.now(); // 생성된 시간으로 업데이트
+        Instant now = Instant.now();
+        this.createdAt = now; // 생성 시간 저장 (UTC 기준)
+        this.updatedAt = now; // 생성된 시간으로 업데이트
     }
 
     // updateAt 갱신 메서드
