@@ -23,11 +23,7 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
 
     public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.READSTATUS_DIR = Paths.get(fileDirectory, "readstatusdata");
-        try {
-            createDirectories(READSTATUS_DIR);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory", e);
-        }
+        createDirectories(READSTATUS_DIR);
     }
 
     private Path getFile(UUID id) {
@@ -35,37 +31,41 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
     }
 
     @Override
-    public void createDirectories(Path path) throws IOException {
-        if (Files.exists(path) == false) {
-            Files.createDirectories(path);
+    public void createDirectories(Path path) {
+        try {
+            if (Files.exists(path) == false) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directories: " + path, e);
         }
     }
 
     @Override
-    public void writeFile(Path path, Object obj) throws IOException {
+    public void writeFile(Path path, Object obj) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(obj);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file: " + path, e);
         }
     }
 
     @Override
-    public <T> T readFile(Path path, Class<T> clazz) throws IOException, ClassNotFoundException {
+    public <T> T readFile(Path path, Class<T> clazz) {
         if (Files.exists(path) == false) {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             return clazz.cast(ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to read file: " + path, e);
         }
     }
 
     @Override
     public void upsert(ReadStatus readStatus) {
         Path filePath = getFile(readStatus.getId());
-        try {
-            writeFile(filePath, readStatus);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upsert read status", e);
-        }
+        writeFile(filePath, readStatus);
     }
 
     @Override
@@ -82,11 +82,7 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
     @Override
     public ReadStatus findById(UUID readStatusId) {
         Path filePath = getFile(readStatusId);
-        try {
-            return readFile(filePath, ReadStatus.class);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to find read status", e);
-        }
+        return readFile(filePath, ReadStatus.class);
     }
 
     @Override
@@ -105,13 +101,9 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
         List<ReadStatus> results = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
-                try {
-                    ReadStatus readStatus = readFile(file.toPath(), ReadStatus.class);
-                    if (readStatus != null) {
-                        results.add(readStatus);
-                    }
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException("Failed to load read statuses", e);
+                ReadStatus readStatus = readFile(file.toPath(), ReadStatus.class); // 내부에서 예외 처리됨
+                if (readStatus != null) {
+                    results.add(readStatus);
                 }
             }
         }
@@ -141,7 +133,7 @@ public class FileReadStatusRepository implements ReadStatusRepository, FileRepos
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete read status", e);
+            throw new RuntimeException("Failed to delete read status" + filePath, e);
         }
     }
 }

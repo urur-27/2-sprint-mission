@@ -24,11 +24,7 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
 
     public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.CHANNEL_DIR = Paths.get(fileDirectory,"channeldata");
-        try {
-            createDirectories(CHANNEL_DIR);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory", e);
-        }
+        createDirectories(CHANNEL_DIR);
     }
 
     private Path getChannelFile(UUID id) {
@@ -37,49 +33,49 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
 
     // 파일 저장을 위한 경로
     @Override
-    public void createDirectories(Path path) throws IOException {
-        if (Files.exists(path) == false) {
-            Files.createDirectories(path);
+    public void createDirectories(Path path)  {
+        try {
+            if (Files.exists(path) == false) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directories: " + path, e);
         }
     }
 
     // 파일 쓰기
     @Override
-    public void writeFile(Path path, Object obj) throws IOException {
+    public void writeFile(Path path, Object obj)  {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(obj);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file: " + path, e);
         }
     }
 
     // 파일 읽어오기
     @Override
-    public <T> T readFile(Path path, Class<T> clazz) throws IOException, ClassNotFoundException {
+    public <T> T readFile(Path path, Class<T> clazz)  {
         if (Files.exists(path) == false) {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             return clazz.cast(ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to read file: " + path, e);
         }
     }
 
     @Override
     public void upsert(Channel channel) {
         Path filePath = getChannelFile(channel.getId());
-        try {
-            writeFile(filePath, channel);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upsert channel", e);
-        }
+        writeFile(filePath, channel);
     }
 
     @Override
     public Channel findById(UUID id) {
         Path filePath = getChannelFile(id);
-        try {
-            return readFile(filePath, Channel.class);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to find channel", e);
-        }
+        return readFile(filePath, Channel.class);
     }
 
     @Override
@@ -91,11 +87,7 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
 
         List<Channel> result = new ArrayList<>();
         for (File f : files) {
-            try {
-                result.add(readFile(f.toPath(), Channel.class));
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("Failed to find all channel", e);
-            }
+            result.add(readFile(f.toPath(), Channel.class));
         }
         return result;
     }
@@ -116,7 +108,7 @@ public class FileChannelRepository implements ChannelRepository, FileRepository 
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete channel file", e);
+            throw new RuntimeException("Failed to delete channel file"+filePath, e);
         }
     }
 }

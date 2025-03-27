@@ -24,11 +24,7 @@ public class FileUserStatusRepository implements UserStatusRepository, FileRepos
 
     public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.USERSTATUS_DIR = Paths.get(fileDirectory, "userstatusdata");
-        try {
-            createDirectories(USERSTATUS_DIR);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory", e);
-        }
+        createDirectories(USERSTATUS_DIR);
     }
 
     private Path getFile(UUID userId) {
@@ -36,37 +32,41 @@ public class FileUserStatusRepository implements UserStatusRepository, FileRepos
     }
 
     @Override
-    public void createDirectories(Path path) throws IOException {
-        if (Files.exists(path) == false) {
-            Files.createDirectories(path);
+    public void createDirectories(Path path) {
+        try {
+            if (Files.exists(path) == false) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directories: " + path, e);
         }
     }
 
     @Override
-    public void writeFile(Path path, Object obj) throws IOException {
+    public void writeFile(Path path, Object obj) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(obj);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file: " + path, e);
         }
     }
 
     @Override
-    public <T> T readFile(Path path, Class<T> clazz) throws IOException, ClassNotFoundException {
+    public <T> T readFile(Path path, Class<T> clazz) {
         if (Files.exists(path) == false) {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             return clazz.cast(ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to read file: " + path, e);
         }
     }
 
     @Override
     public void upsert(UserStatus userStatus) {
         Path filePath = getFile(userStatus.getUserId());
-        try {
-            writeFile(filePath, userStatus);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upsert user status", e);
-        }
+        writeFile(filePath, userStatus);
     }
 
     @Override
@@ -104,11 +104,7 @@ public class FileUserStatusRepository implements UserStatusRepository, FileRepos
     @Override
     public UserStatus findByUserId(UUID userId) {
         Path filePath = getFile(userId);
-        try {
-            return readFile(filePath, UserStatus.class);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to find user status", e);
-        }
+        return readFile(filePath, UserStatus.class);
     }
 
     private List<UserStatus> findAll() {
@@ -116,12 +112,8 @@ public class FileUserStatusRepository implements UserStatusRepository, FileRepos
         List<UserStatus> results = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
-                try {
-                    UserStatus status = readFile(file.toPath(), UserStatus.class);
-                    if (status != null) results.add(status);
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException("Failed to load user statuses", e);
-                }
+                UserStatus status = readFile(file.toPath(), UserStatus.class);
+                if (status != null) results.add(status);
             }
         }
         return results;

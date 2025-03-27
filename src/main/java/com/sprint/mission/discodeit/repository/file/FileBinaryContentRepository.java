@@ -24,11 +24,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
 
     public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.CONTENT_DIR = Paths.get(fileDirectory, "binarycontentdata");
-        try {
-            createDirectories(CONTENT_DIR);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory", e);
-        }
+        createDirectories(CONTENT_DIR);
     }
 
     private Path getFile(UUID id) {
@@ -36,37 +32,41 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
     }
 
     @Override
-    public void createDirectories(Path path) throws IOException {
-        if (Files.exists(path) == false) {
-            Files.createDirectories(path);
+    public void createDirectories(Path path) {
+        try {
+            if (Files.exists(path) == false) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void writeFile(Path path, Object obj) throws IOException {
+    public void writeFile(Path path, Object obj) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(obj);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file: " + path, e);
         }
     }
 
     @Override
-    public <T> T readFile(Path path, Class<T> clazz) throws IOException, ClassNotFoundException {
+    public <T> T readFile(Path path, Class<T> clazz) {
         if (Files.exists(path) == false) return null;
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             return clazz.cast(ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to read file: " + path, e);
         }
     }
 
     @Override
     public UUID upsert(BinaryContent binaryContent) {
         Path filePath = getFile(binaryContent.getId());
-        try {
-            writeFile(filePath, binaryContent);
-            return binaryContent.getId();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upsert binary content", e);
-        }
+        writeFile(filePath, binaryContent);
+        return binaryContent.getId();
     }
 
     @Override
@@ -75,12 +75,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
         List<BinaryContent> results = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
-                try {
-                    BinaryContent content = readFile(file.toPath(), BinaryContent.class);
-                    if (content != null) results.add(content);
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException("Failed to load binary contents", e);
-                }
+                BinaryContent content = readFile(file.toPath(), BinaryContent.class);
+                if (content != null) results.add(content);
             }
         }
         return results;
@@ -89,11 +85,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
     @Override
     public BinaryContent findById(UUID id) {
         Path filePath = getFile(id);
-        try {
-            return readFile(filePath, BinaryContent.class);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to find binary content", e);
-        }
+        return readFile(filePath, BinaryContent.class);
     }
 
     @Override
@@ -114,7 +106,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete binary content", e);
+            throw new RuntimeException("Failed to delete binary content"+ filePath, e);
         }
     }
 }
