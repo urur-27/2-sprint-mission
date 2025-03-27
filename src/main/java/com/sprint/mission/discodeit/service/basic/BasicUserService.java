@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto2.UserCreateRequest;
+import com.sprint.mission.discodeit.dto2.UserDto;
 import com.sprint.mission.discodeit.dto2.UserResponse;
 import com.sprint.mission.discodeit.dto2.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -68,9 +69,9 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserDto> findAll() {
         return userRepository.findAll().stream()
-                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), UserStatusRepository.isUserOnline(user.getId())))
+                .map(user -> new UserDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),user.getUsername(), user.getEmail(), user.getProfileId(), UserStatusRepository.isUserOnline(user.getId())))
                 .toList();
     }
 
