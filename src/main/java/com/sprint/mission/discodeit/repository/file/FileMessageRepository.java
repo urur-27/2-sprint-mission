@@ -100,7 +100,6 @@ public class FileMessageRepository implements MessageRepository, FileRepository 
         return result;
     }
 
-    // 사용자 정보 업데이트
     @Override
     public void update(UUID id, String newMessageName) {
         Message message = findById(id);
@@ -111,7 +110,6 @@ public class FileMessageRepository implements MessageRepository, FileRepository 
         upsert(message);
     }
 
-    // 사용자 삭제
     @Override
     public void delete(UUID id) {
         Path filePath = getMessageFile(id);

@@ -73,11 +73,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID id) {
         Message message = messageRepository.findById(id);
-        // 첨부파일(BinaryContent) 삭제 로직 추가
-        binaryContentRepository.deleteByMessageId(id);
 
         message.getAttachments()
                 .forEach(binaryContentRepository::delete);
+
         messageRepository.delete(id);
     }
 

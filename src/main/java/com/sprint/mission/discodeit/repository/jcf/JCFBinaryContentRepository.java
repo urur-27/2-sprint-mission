@@ -31,15 +31,11 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(UUID messageId) {
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        Set<UUID> idSet = new HashSet<>(ids);
         return data.values().stream()
-                .filter(content -> content.getId().equals(messageId))
+                .filter(content -> idSet.contains(content.getId()))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteByMessageId(UUID messageId) {
-        data.entrySet().removeIf(entry -> entry.getValue().getId().equals(messageId));
     }
 
     @Override

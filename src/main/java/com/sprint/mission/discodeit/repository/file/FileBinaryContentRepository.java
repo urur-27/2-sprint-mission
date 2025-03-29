@@ -12,9 +12,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
@@ -91,15 +89,11 @@ public class FileBinaryContentRepository implements BinaryContentRepository, Fil
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(UUID messageId) {
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        Set<UUID> idSet = new HashSet<>(ids); // 빠른 조회를 위한 Set 변환
         return findAll().stream()
-                .filter(content -> content.getId().equals(messageId))
+                .filter(content -> idSet.contains(content.getId()))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteByMessageId(UUID messageId) {
-        findAllByIdIn(messageId).forEach(content -> delete(content.getId()));
     }
 
     @Override

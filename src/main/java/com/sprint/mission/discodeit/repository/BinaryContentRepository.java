@@ -13,8 +13,6 @@ public interface BinaryContentRepository {
     List<BinaryContent> findAll();
     // UUID를 통해 조회
     BinaryContent findById(UUID userId);
-    List<BinaryContent> findAllByIdIn(UUID messageId);
-    // 특정 Message에 첨부된 파일 삭제
-    void deleteByMessageId(UUID messageId);
+    List<BinaryContent> findAllByIdIn(List<UUID> ids);
     void delete(UUID id);
 }

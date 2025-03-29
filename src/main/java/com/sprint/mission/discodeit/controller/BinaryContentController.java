@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/binaryContent")
@@ -34,10 +35,15 @@ public class BinaryContentController {
     // 여러 파일 조회
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseEntity<List<FileMetaResponse>> findFiles(@RequestParam List<UUID> ids) {
-        List<FileMetaResponse> metas = ids.stream().map(id -> {
-            BinaryContent content = binaryContentService.findById(id);
-            return new FileMetaResponse(id.toString(), content.getContentType(), "/api/binaryContent/view?binaryContentId=" + id);
-        }).toList();
+        List<BinaryContent> contents = binaryContentService.findAllByIdIn(ids);
+
+        List<FileMetaResponse> metas = contents.stream()
+                .map(content -> new FileMetaResponse(
+                        content.getId().toString(),
+                        content.getContentType(),
+                        "/api/binaryContent/view?binaryContentId=" + content.getId()
+                ))
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(metas);
     }
