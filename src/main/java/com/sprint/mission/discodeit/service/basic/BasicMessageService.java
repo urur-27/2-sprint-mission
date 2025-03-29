@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -22,18 +23,19 @@ public class BasicMessageService implements MessageService {
     @Override
     public UUID create(MessageCreateRequest request) {
         // 첨부파일 등록
-        List<UUID> attachmentIds = (request.attachments() != null)
-                ? request.attachments().stream()
-                .map(attachment -> {
-                    BinaryContent binaryContent = new BinaryContent(
-                            attachment.data(),
-                            attachment.contentType(),
-                            attachment.size()
-                    );
-                    return binaryContentRepository.upsert(binaryContent); // 저장 후 UUID 반환
-                })
-                .collect(Collectors.toList())
-                : List.of();
+        List<UUID> attachmentIds = new ArrayList<>();
+
+        if (request.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : request.attachments()) {
+                BinaryContent binaryContent = new BinaryContent(
+                        attachment.data(),
+                        attachment.contentType(),
+                        attachment.size()
+                );
+                UUID id = binaryContentRepository.upsert(binaryContent); // 저장 후 UUID 반환
+                attachmentIds.add(id);
+            }
+        }
 
         Message message = new Message(
                 request.content(),
