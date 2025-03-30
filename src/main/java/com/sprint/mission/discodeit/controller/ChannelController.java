@@ -22,34 +22,32 @@ public class ChannelController {
 
     // 공개 채널 생성
     @RequestMapping(value = "/public", method = RequestMethod.POST)
-    public ResponseEntity<String> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+    public ResponseEntity<ApiResponse<UUID>> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
         UUID id = channelService.createPublicChannel(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Public channel \"" + request.name() + "\" has been created." +
-                        "\\n UUID:" + id );
+                .body(new ApiResponse<>("Public channel \"" + request.name() + "\" has been created.", id));
     }
 
     // 비공개 채널 생성
     @RequestMapping(value = "/private", method = RequestMethod.POST)
-    public ResponseEntity<String> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+    public ResponseEntity<ApiResponse<UUID>> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
         UUID id = channelService.createPrivateChannel(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Private channel has been created.\nuserIds : \"" + request.userIds() + "\"." +
-                        "\\n UUID:" + id );
+                .body(new ApiResponse<>("Private channel has been created for userIds: " + request.userIds(), id));
     }
 
     // 공개 채널 정보 수정
     @RequestMapping(value = "/public/", method = RequestMethod.PUT)
-    public ResponseEntity<String> updatePublicChannel(@RequestBody ChannelUpdateRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updatePublicChannel(@RequestBody ChannelUpdateRequest request) {
         channelService.update(request);
-        return ResponseEntity.ok("Public channel has been updated.");
+        return ResponseEntity.ok(new ApiResponse<>("Public channel has been updated.", null));
     }
 
     // 채널 삭제
     @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteChannel(@PathVariable UUID channelId) {
+    public ResponseEntity<ApiResponse<Void>> deleteChannel(@PathVariable UUID channelId) {
         channelService.delete(channelId);
-        return ResponseEntity.ok("Channel has been deleted.");
+        return ResponseEntity.ok(new ApiResponse<>("Channel has been deleted.", null));
     }
 
     // 특정 사용자가 볼 수 있는 채널 목록 조회

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto2.response.ApiResponse;
 import com.sprint.mission.discodeit.dto2.response.FileMetaResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -34,7 +35,7 @@ public class BinaryContentController {
 
     // 여러 파일 조회
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ResponseEntity<List<FileMetaResponse>> findFiles(@RequestParam List<UUID> ids) {
+    public ResponseEntity<ApiResponse<List<FileMetaResponse>>> findFiles(@RequestParam List<UUID> ids) {
         List<BinaryContent> contents = binaryContentService.findAllByIdIn(ids);
 
         List<FileMetaResponse> metas = contents.stream()
@@ -45,6 +46,9 @@ public class BinaryContentController {
                 ))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(metas);
+        ApiResponse<List<FileMetaResponse>> response =
+                new ApiResponse<>("Successfully fetched file metadata list.", metas);
+
+        return ResponseEntity.ok(response);
     }
 }

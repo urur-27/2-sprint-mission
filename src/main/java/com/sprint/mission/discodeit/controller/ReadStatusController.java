@@ -21,18 +21,18 @@ public class ReadStatusController {
 
     // 1. 특정 채널의 메시지 수신 정보 생성
     @RequestMapping(value = "/channel", method = RequestMethod.POST)
-    public ResponseEntity<String> createReceipts(@RequestBody ReadStatusCreateRequest request) {
+    public ResponseEntity<ApiResponse<UUID>> createReceipts(@RequestBody ReadStatusCreateRequest request) {
         UUID id = readStatusService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Receipt info created for channel: " + request.channelId()+
-                        "\\n UUID : " + id);
+                .body(new ApiResponse<>("Receipt info created for channel: " + request.channelId(), id));
     }
 
     // 2. 특정 채널의 메시지 수신 정보 수정
     @RequestMapping(value = "/channel", method = RequestMethod.PUT)
-    public ResponseEntity<String> updateReceipts(@RequestBody ReadStatusUpdateRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateReceipts(@RequestBody ReadStatusUpdateRequest request) {
         readStatusService.update(request);
-        return ResponseEntity.ok("Receipt info updated for channel: " + request.channelId());
+        return ResponseEntity.ok(new ApiResponse<>("Receipt info updated for channel: " + request.channelId(), null));
+
     }
 
     // 3. 특정 사용자의 메시지 수신 정보 조회

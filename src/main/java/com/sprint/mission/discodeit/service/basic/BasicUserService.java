@@ -82,10 +82,12 @@ public class BasicUserService implements UserService {
             throw new NoSuchElementException("Could not find user with that ID. : " + request.userId());
         }
 
-        // 사용자 정보 업데이트 (이름 & 이메일)
+        if(request.profileImage() != null) {
+            UUID profileId = saveProfileImage(request.profileImage());
+            // 사용자 정보 업데이트 (이름 & 이메일)
+            userRepository.update(request.userId(), request.username(), request.email(), request.password(), profileId);
+        }
         userRepository.update(request.userId(), request.username(), request.email(), request.password(), null);
-
-        saveProfileImage(request.profileImage());
     }
 
     @Override

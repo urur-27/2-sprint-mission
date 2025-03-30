@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto2.response.ApiResponse;
+import com.sprint.mission.discodeit.dto2.response.UserCreateResponse;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -28,24 +29,29 @@ public class UserController {
 
     // User 등록
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<String> createUser(@RequestBody UserCreateRequest request) {
-            UUID id = userService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User \""+request.username()+"\" has been registered. \n UUID : "+id);
+    public ResponseEntity<ApiResponse<UserCreateResponse>> createUser(@RequestBody UserCreateRequest request) {
+        UUID id = userService.create(request);
+        UserCreateResponse response = new UserCreateResponse(
+                id,
+                request.username(),
+                request.email());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>("User has been registered successfully.", response));
     }
 
     // User 수정
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<String> updateUser(@RequestBody UserUpdateRequest request) {
-            userService.update(request);
-            return ResponseEntity.ok("User \""+request.username()+"\" information has been modified.");
+    public ResponseEntity<ApiResponse<Void>> updateUser(@RequestBody UserUpdateRequest request) {
+        userService.update(request);
+        return ResponseEntity.ok(new ApiResponse<>("User \"" + request.username() + "\" information has been modified.", null));
     }
 
     // User 삭제
     @RequestMapping(value="/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID id) {
         String userName = userService.findById(id).username();
         userService.delete(id);
-        return ResponseEntity.ok("\""+userName+"\" has been deleted.");
+        return ResponseEntity.ok(new ApiResponse<>("\"" + userName + "\" has been deleted.", null));
     }
 
     // 모든 유저 조회
@@ -58,9 +64,10 @@ public class UserController {
 
     // 온라인 상태 갱신
     @RequestMapping(value="/{id}/status", method = RequestMethod.PUT)
-    public ResponseEntity<String> updateOnlineStatus(@PathVariable UUID id) {
-            userStatusRepository.updateLastAccessedAt(id, Instant.now());
-            return ResponseEntity.ok("\""+userService.findById(id).username()+"\" online status has been updated.");
+    public ResponseEntity<ApiResponse<Void>> updateOnlineStatus(@PathVariable UUID id) {
+        userStatusRepository.updateLastAccessedAt(id, Instant.now());
+        String name = userService.findById(id).username();
+        return ResponseEntity.ok(new ApiResponse<>("\"" + name + "\" online status has been updated.", null));
     }
 
     @RequestMapping(value = "/auth/login", method = RequestMethod.POST)

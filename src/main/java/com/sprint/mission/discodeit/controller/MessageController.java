@@ -22,25 +22,24 @@ public class MessageController {
 
     // 메시지 보내기
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<String> sendMessage(@RequestBody MessageCreateRequest request) {
+    public ResponseEntity<ApiResponse<UUID>> sendMessage(@RequestBody MessageCreateRequest request) {
         UUID id = messageService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Message has been sent." +
-                        "\\n UUID : " + id);
+                .body(new ApiResponse<>("Message has been sent.", id));
     }
 
     // 메시지 수정
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<String> updateMessage(@RequestBody MessageUpdateRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateMessage(@RequestBody MessageUpdateRequest request) {
         messageService.update(request);
-        return ResponseEntity.ok("Message has been updated.");
+        return ResponseEntity.ok(new ApiResponse<>("Message has been updated.", null));
     }
 
     // 메시지 삭제
     @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteMessage(@PathVariable UUID messageId) {
+    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable UUID messageId) {
         messageService.delete(messageId);
-        return ResponseEntity.ok("Message has been deleted.");
+        return ResponseEntity.ok(new ApiResponse<>("Message has been deleted.", null));
     }
 
     // 특정 채널 메시지 목록 조회
