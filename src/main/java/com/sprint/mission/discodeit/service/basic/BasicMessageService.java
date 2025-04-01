@@ -1,55 +1,51 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private static volatile BasicMessageService instance;
     private final MessageRepository messageRepository;
-
-    private final UserService userService;
-    private final ChannelService channelService;
-
-    private BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.messageRepository = messageRepository;  // 저장소 주입
-    }
-
-    // 기본 저장소를 FileMessageRepository로 설정
-    public static BasicMessageService getInstance(UserService userService, ChannelService channelService) {
-        return getInstance(userService,channelService,new FileMessageRepository());
-    }
-
-    public static BasicMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-        if (instance == null) {
-            synchronized (BasicMessageService.class) {
-                if (instance == null) {
-                    instance = new BasicMessageService(userService, channelService, messageRepository);
-                }
-            }
-        }
-        return instance;
-    }
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UUID create(String content, UUID senderId, UUID channelId) {
-        User sender = findUserById(senderId);
-        Channel channel = findChannelById(channelId);
+    public UUID create(MessageCreateRequest request) {
+        // 첨부파일 등록
+        List<UUID> attachmentIds = new ArrayList<>();
 
-        Message message = new Message(content, sender, channel);
-        messageRepository.create(message);
+        if (request.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : request.attachments()) {
+                BinaryContent binaryContent = new BinaryContent(
+                        attachment.data(),
+                        attachment.contentType(),
+                        attachment.size()
+                );
+                UUID id = binaryContentRepository.upsert(binaryContent); // 저장 후 UUID 반환
+                attachmentIds.add(id);
+            }
+        }
+
+        Message message = new Message(
+                request.content(),
+                request.senderId(),
+                request.channelId(),
+                attachmentIds
+        );
+
+        messageRepository.upsert(message);
+
         return message.getId();
     }
 
@@ -60,33 +56,28 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return messageRepository.findAll()
+                .stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void update(UUID id, String messageName) {
-        // 검증
-        Message message = findById(id);
-        messageRepository.update(id, messageName);
+    public void update(MessageUpdateRequest request) {
+        Message message = findById(request.id());
+        message.updateMessage(request.content());
+        messageRepository.update(request.id(), request.content());
     }
 
     @Override
     public void delete(UUID id) {
-        // 검증
-        Message message = findById(id);
+        Message message = messageRepository.findById(id);
+
+        message.getAttachments()
+                .forEach(binaryContentRepository::delete);
+
         messageRepository.delete(id);
     }
 
-    // User ID 검증
-    private User findUserById(UUID id) {
-        return Optional.ofNullable(userService.findById(id))
-                .orElseThrow(() -> new NoSuchElementException("User does not exist: " + id));
-    }
-
-    // Channel ID 검증
-    private Channel findChannelById(UUID id) {
-        return Optional.ofNullable(channelService.findById(id))
-                .orElseThrow(() -> new NoSuchElementException("Channel does not exist: " + id));
-    }
 }

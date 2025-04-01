@@ -1,93 +1,116 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.FileRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-public class FileChannelRepository implements ChannelRepository {
-    private static final File CHANNEL_DIR = new File("output/channeldata");
+import static com.sprint.mission.discodeit.common.CodeitConstants.FILE_EXTENSION;
 
-    public FileChannelRepository() {
-        if (!CHANNEL_DIR.exists()) {
-            CHANNEL_DIR.mkdirs();
-        }
+@Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
+public class FileChannelRepository implements ChannelRepository, FileRepository {
+    private final Path CHANNEL_DIR;
+
+    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+        this.CHANNEL_DIR = Paths.get(fileDirectory,"channeldata");
+        createDirectories(CHANNEL_DIR);
     }
 
-    // UUID에 대응하는 객체 리턴
-    private File getChannelFile(UUID id) {
-        return new File(CHANNEL_DIR, id.toString() + ".dat");
+    private Path getChannelFile(UUID id) {
+        return CHANNEL_DIR.resolve(id.toString() + FILE_EXTENSION);
     }
 
-    // Channel 객체를 해당 파일에 직렬화하여 저장
+    // 파일 저장을 위한 경로
     @Override
-    public void create(Channel channel) {
-        File f = getChannelFile(channel.getId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
-            oos.writeObject(channel);
+    public void createDirectories(Path path)  {
+        try {
+            if (Files.exists(path) == false) {
+                Files.createDirectories(path);
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to create directories: " + path, e);
         }
     }
 
-    // 파일에서 Channel 객체를 역직렬화하여 읽어옴
+    // 파일 쓰기
+    @Override
+    public void writeFile(Path path, Object obj)  {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
+            oos.writeObject(obj);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file: " + path, e);
+        }
+    }
+
+    // 파일 읽어오기
+    @Override
+    public <T> T readFile(Path path, Class<T> clazz)  {
+        if (Files.exists(path) == false) {
+            return null;
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+            return clazz.cast(ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to read file: " + path, e);
+        }
+    }
+
+    @Override
+    public void upsert(Channel channel) {
+        Path filePath = getChannelFile(channel.getId());
+        writeFile(filePath, channel);
+    }
+
     @Override
     public Channel findById(UUID id) {
-        File f = getChannelFile(id);
-        if (!f.exists()) {
-            return null;
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
-            return (Channel) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Path filePath = getChannelFile(id);
+        return readFile(filePath, Channel.class);
     }
 
+    @Override
     public List<Channel> findAll() {
-        File[] files = CHANNEL_DIR.listFiles((dir, name) -> name.endsWith(".dat"));
+        File[] files = CHANNEL_DIR.toFile().listFiles((dir, name) -> name.endsWith(FILE_EXTENSION));
         if (files == null) {
             return new ArrayList<>();
         }
 
         List<Channel> result = new ArrayList<>();
         for (File f : files) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
-                Channel channel = (Channel) ois.readObject();
-                result.add(channel);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            result.add(readFile(f.toPath(), Channel.class));
         }
         return result;
     }
 
-    // 사용자 정보 업데이트
     @Override
-    public void update(UUID id, String newChannelName) {
+    public void update(UUID id, ChannelType type, String newChannelName, String description) {
         Channel channel = findById(id);
         if (channel == null) {
             throw new NoSuchElementException("No channel file found for ID: " + id);
         }
-        channel.updateChannel(newChannelName);
-        create(channel);
+        channel.updateChannel(type, newChannelName, description);
+        upsert(channel);
     }
 
-    // 사용자 삭제
     @Override
     public void delete(UUID id) {
-        File f = getChannelFile(id);
-        if (!f.exists() || !f.isFile()) {
-            throw new NoSuchElementException("No channel file found for ID: " + id);
-        }
-        boolean deleted = f.delete();
-        if (!deleted) {
-            throw new RuntimeException("Failed to delete channel file for ID: " + id);
+        Path filePath = getChannelFile(id);
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete channel file"+filePath, e);
         }
     }
 }

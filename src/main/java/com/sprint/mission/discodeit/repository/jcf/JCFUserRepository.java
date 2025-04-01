@@ -2,13 +2,18 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
+
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data = new HashMap<>();
 
     @Override
-    public void create(User user) {
+    public void upsert(User user) {
         data.put(user.getId(), user);
     }
 
@@ -23,10 +28,10 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public void update(UUID id, String newUsername, String newEmail) {
+    public void update(UUID id, String newUsername, String newEmail, String newPassword, UUID profileId) {
         User user = data.get(id);
         if(user != null){
-            user.updateUser(newUsername, newEmail);
+            user.updateUser(newUsername, newEmail, newPassword, profileId);
         }
     }
 

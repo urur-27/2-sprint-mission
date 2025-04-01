@@ -2,14 +2,18 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data = new HashMap<>();
 
     @Override
-    public void create(Message message) {
+    public void upsert(Message message) {
         data.put(message.getId(), message);
     }
 
@@ -20,7 +24,9 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(data.values());
+        return data.values().stream()
+                .sorted(Comparator.comparing(Message::getCreatedAt).reversed()) // 최신순
+                .toList();
     }
 
     @Override
