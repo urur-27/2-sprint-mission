@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exceptionhandler;
 
+import com.sprint.mission.discodeit.exception.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.DuplicateReadStatusException;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
@@ -50,7 +51,7 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(HttpStatus.NOT_FOUND, e, request);
   }
 
-  // 채널이 없는 경우 404
+  // ChannelID 없는 경우 404
   @ExceptionHandler(ChannelNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleChannelNotFound(ChannelNotFoundException e,
       HttpServletRequest request) {
@@ -60,6 +61,13 @@ public class GlobalExceptionHandler {
   // MessageId 없는 경우 404
   @ExceptionHandler(MessageNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleUserNotFound(MessageNotFoundException e,
+      HttpServletRequest request) {
+    return buildErrorResponse(HttpStatus.NOT_FOUND, e, request);
+  }
+
+  // BinaryContentId 없는 경우 404
+  @ExceptionHandler(BinaryContentNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFound(BinaryContentNotFoundException e,
       HttpServletRequest request) {
     return buildErrorResponse(HttpStatus.NOT_FOUND, e, request);
   }

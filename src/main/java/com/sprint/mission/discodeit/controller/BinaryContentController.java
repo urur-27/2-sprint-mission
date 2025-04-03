@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,39 +17,29 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
-    private final BinaryContentService binaryContentService;
 
-    // 단일 파일 조회
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
-    public ResponseEntity<Resource> findFile(@RequestParam UUID binaryContentId) {
-        BinaryContent content = binaryContentService.findById(binaryContentId);
-        ByteArrayResource resource = new ByteArrayResource(content.getData());
+  private final BinaryContentService binaryContentService;
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(content.getContentType()))
-                .contentLength(content.getSize())
-                .body(resource);
-    }
+  // 단일 파일 조회
+  @GetMapping("/{binaryContentId}")
+  public ResponseEntity<BinaryContent> findFile(@RequestParam UUID binaryContentId) {
+    BinaryContent content = binaryContentService.findById(binaryContentId);
 
-    // 여러 파일 조회
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<List<FileMetaResponse>>> findFiles(@RequestParam List<UUID> ids) {
-        List<BinaryContent> contents = binaryContentService.findAllByIdIn(ids);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(content);
+  }
 
-        List<FileMetaResponse> metas = contents.stream()
-                .map(content -> new FileMetaResponse(
-                        content.getId().toString(),
-                        content.getContentType(),
-                        "/api/binaryContent/view?binaryContentId=" + content.getId()
-                ))
-                .collect(Collectors.toList());
-
-        ApiResponse<List<FileMetaResponse>> response =
-                new ApiResponse<>("Successfully fetched file metadata list.", metas);
-
-        return ResponseEntity.ok(response);
-    }
+  // 여러 파일 조회
+  @GetMapping
+  public ResponseEntity<List<BinaryContent>> findFiles(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(binaryContents);
+  }
 }
