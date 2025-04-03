@@ -56,7 +56,7 @@ public class BasicMessageService implements MessageService {
               attachment.getContentType(),
               attachment.getBytes()
           );
-          UUID attachmentId = binaryContentRepository.upsert(binaryContent);
+          UUID attachmentId = binaryContentRepository.upsert(binaryContent).getId();
           attachmentIds.add(attachmentId);
         } catch (IOException e) {
           throw new FileProcessingException("An error occurred while processing the attachment.",

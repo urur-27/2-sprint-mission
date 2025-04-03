@@ -18,7 +18,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public UUID create(BinaryContentCreateRequest request) {
+  public BinaryContent create(BinaryContentCreateRequest request) {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
