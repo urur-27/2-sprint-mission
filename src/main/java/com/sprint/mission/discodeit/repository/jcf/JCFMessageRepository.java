@@ -10,35 +10,37 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> data = new HashMap<>();
 
-    @Override
-    public void upsert(Message message) {
-        data.put(message.getId(), message);
-    }
+  private final Map<UUID, Message> data = new HashMap<>();
 
-    @Override
-    public Message findById(UUID id) {
-        return data.get(id);
-    }
+  @Override
+  public Message upsert(Message message) {
+    data.put(message.getId(), message);
+    return message;
+  }
 
-    @Override
-    public List<Message> findAll() {
-        return data.values().stream()
-                .sorted(Comparator.comparing(Message::getCreatedAt).reversed()) // 최신순
-                .toList();
-    }
+  @Override
+  public Message findById(UUID id) {
+    return data.get(id);
+  }
 
-    @Override
-    public void update(UUID id, String newContent) {
-        Message message = data.get(id);
-        if (message != null) {
-            message.updateMessage(newContent);
-        }
-    }
+  @Override
+  public List<Message> findAll() {
+    return data.values().stream()
+        .sorted(Comparator.comparing(Message::getCreatedAt).reversed()) // 최신순
+        .toList();
+  }
 
-    @Override
-    public void delete(UUID id) {
-        data.remove(id);
+  @Override
+  public void update(UUID id, String newContent) {
+    Message message = data.get(id);
+    if (message != null) {
+      message.updateMessage(newContent);
     }
+  }
+
+  @Override
+  public void delete(UUID id) {
+    data.remove(id);
+  }
 }

@@ -7,46 +7,58 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/message")
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
 
-    private final MessageService messageService;
+  private final MessageService messageService;
 
-    // 메시지 보내기
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<ApiResponse<UUID>> sendMessage(@RequestBody MessageCreateRequest request) {
-        UUID id = messageService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>("Message has been sent.", id));
-    }
+  // 메시지 보내기
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Message> sendMessage(
+      @RequestPart MessageCreateRequest messageCreateRequest,
+      @RequestPart(required = false) List<MultipartFile> attachments) {
 
-    // 메시지 수정
-    @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<ApiResponse<Void>> updateMessage(@RequestBody MessageUpdateRequest request) {
-        messageService.update(request);
-        return ResponseEntity.ok(new ApiResponse<>("Message has been updated.", null));
-    }
+    Message message = messageService.create(messageCreateRequest, attachments);
+    return ResponseEntity.status(HttpStatus.CREATED).body(message);
+  }
 
-    // 메시지 삭제
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
-    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable UUID messageId) {
-        messageService.delete(messageId);
-        return ResponseEntity.ok(new ApiResponse<>("Message has been deleted.", null));
-    }
+  // 메시지 수정
+  @PatchMapping("/{messageId}")
+  public ResponseEntity<Message> updateMessage(
+      @PathVariable UUID messageId,
+      @RequestBody MessageUpdateRequest messageUpdateRequest) {
 
-    // 특정 채널 메시지 목록 조회
-    @RequestMapping(value = "/channel/{channelId}", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<List<Message>>> getMessagesByChannel(@PathVariable UUID channelId) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        ApiResponse<List<Message>> response = new ApiResponse<>("Message list search success", messages);
-        return ResponseEntity.ok(response);
-    }
+    Message updatedMessage = messageService.update(messageId, messageUpdateRequest);
+    return ResponseEntity.status(HttpStatus.CREATED).body(updatedMessage);
+  }
+
+  // 메시지 삭제
+  @DeleteMapping("/{messageId}")
+  public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
+    messageService.delete(messageId);
+    return ResponseEntity.noContent().build();
+  }
+//  @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
+//  public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable UUID messageId) {
+//    messageService.delete(messageId);
+//    return ResponseEntity.ok(new ApiResponse<>("Message has been deleted.", null));
+//  }
+
+  // 특정 채널 메시지 목록 조회
+  @GetMapping
+  public ResponseEntity<List<Message>> getMessagesByChannel(
+      @RequestParam UUID channelId) {
+    List<Message> messages = messageService.findAllByChannelId(channelId);
+    return ResponseEntity.ok(messages);
+  }
 }

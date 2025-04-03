@@ -58,7 +58,7 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse findById(UUID id) {
     Channel channel = channelRepository.findById(id);
     if (channel == null) {
-      throw new NoSuchElementException("No channel found for ID: " + id);
+      throw new ChannelNotFoundException(id);
     }
     // 해당 채널의 가장 최근 메시지 시간 조회
     Instant lastMessageTime = messageRepository.findAll().stream()
