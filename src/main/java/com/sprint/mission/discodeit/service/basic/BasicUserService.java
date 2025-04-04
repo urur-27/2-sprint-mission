@@ -8,9 +8,9 @@ import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.DuplicateUsernameException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.duplicate.DuplicateUsernameException;
+import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -42,7 +42,7 @@ public class BasicUserService implements UserService {
       throw new DuplicateEmailException(email);
     }
     if (userRepository.existsByUsername(username)) {
-      throw new DuplicateEmailException(username);
+      throw new DuplicateUsernameException(username);
     }
 
     UUID nullableProfileId = optionalProfileCreateRequest

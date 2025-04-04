@@ -1,6 +1,4 @@
-package com.sprint.mission.discodeit.exception;
-
-import java.util.UUID;
+package com.sprint.mission.discodeit.exception.invalid;
 
 public class InvalidPasswordException extends RuntimeException {
 

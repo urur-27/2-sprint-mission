@@ -48,12 +48,7 @@ public class MessageController {
     messageService.delete(messageId);
     return ResponseEntity.noContent().build();
   }
-//  @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
-//  public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable UUID messageId) {
-//    messageService.delete(messageId);
-//    return ResponseEntity.ok(new ApiResponse<>("Message has been deleted.", null));
-//  }
-
+  
   // 특정 채널 메시지 목록 조회
   @GetMapping
   public ResponseEntity<List<Message>> getMessagesByChannel(

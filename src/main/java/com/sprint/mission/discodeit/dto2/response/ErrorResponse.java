@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.dto2.response;
 
 import java.time.Instant;
 import lombok.Getter;

@@ -1,27 +1,24 @@
 package com.sprint.mission.discodeit.exceptionhandler;
 
-import com.sprint.mission.discodeit.exception.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.DuplicateReadStatusException;
-import com.sprint.mission.discodeit.exception.DuplicateUsernameException;
-import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.exception.notfound.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.duplicate.DuplicateReadStatusException;
+import com.sprint.mission.discodeit.exception.duplicate.DuplicateUsernameException;
+import com.sprint.mission.discodeit.dto2.response.ErrorResponse;
 import com.sprint.mission.discodeit.exception.FileProcessingException;
-import com.sprint.mission.discodeit.exception.InvalidChannelTypeException;
-import com.sprint.mission.discodeit.exception.InvalidPasswordException;
-import com.sprint.mission.discodeit.exception.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.ReadStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.invalid.InvalidChannelTypeException;
+import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
+import com.sprint.mission.discodeit.exception.invalid.InvalidPasswordException;
+import com.sprint.mission.discodeit.exception.notfound.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.notfound.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.notfound.UserStatusNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -107,12 +104,20 @@ public class GlobalExceptionHandler {
 
   // 파일 탐색 중 오류 500
   @ExceptionHandler(FileProcessingException.class)
-  public ResponseEntity<Map<String, String>> handleFileProcessingException(
-      FileProcessingException ex) {
-    Map<String, String> body = new HashMap<>();
-    body.put("error", "File processing error");
-    body.put("message", ex.getMessage());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+  public ResponseEntity<ErrorResponse> handleFileProcessingException(
+      FileProcessingException ex,
+      HttpServletRequest request
+  ) {
+    return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex, request);
+  }
+
+  // JSON 입력값이 잘못된 경우, 400
+  @ExceptionHandler(InvalidJsonFormatException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidJsonFormat(
+      InvalidJsonFormatException e,
+      HttpServletRequest request
+  ) {
+    return buildErrorResponse(HttpStatus.BAD_REQUEST, e, request);
   }
 
   @ExceptionHandler(Exception.class)

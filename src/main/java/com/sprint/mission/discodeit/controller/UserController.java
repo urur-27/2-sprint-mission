@@ -1,17 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto2.data.UserDto;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
 import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto2.response.ApiResponse;
-import com.sprint.mission.discodeit.dto2.response.UserCreateResponse;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -22,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,10 +35,21 @@ public class UserController {
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
   public ResponseEntity<User> createUser(
-      @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+      @RequestPart("userCreateRequest") String userCreateRequestJson,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    UserCreateRequest userCreateRequest;
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    try {
+      userCreateRequest = objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
+    } catch (IOException e) {
+      throw new InvalidJsonFormatException(
+          "The JSON format of the member creation request is invalid.", e);
+    }
+
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
+
     User createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -89,13 +96,6 @@ public class UserController {
         .status(HttpStatus.OK)
         .body(updatedUserStatus);
   }
-
-//  @RequestMapping(value = "/auth/login", method = RequestMethod.POST)
-//  public ResponseEntity<UserResponse> login(@RequestBody UserLoginRequest request) {
-//    UserResponse response = authService.login(request);
-//    return ResponseEntity.ok(response);
-//  }
-
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
     if (profileFile.isEmpty()) {

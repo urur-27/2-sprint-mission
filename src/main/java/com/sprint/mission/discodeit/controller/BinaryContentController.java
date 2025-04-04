@@ -25,7 +25,7 @@ public class BinaryContentController {
 
   // 단일 파일 조회
   @GetMapping("/{binaryContentId}")
-  public ResponseEntity<BinaryContent> findFile(@RequestParam UUID binaryContentId) {
+  public ResponseEntity<BinaryContent> findFile(@PathVariable UUID binaryContentId) {
     BinaryContent content = binaryContentService.findById(binaryContentId);
 
     return ResponseEntity

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.invalid;
 
 public class InvalidChannelTypeException extends RuntimeException {
 
