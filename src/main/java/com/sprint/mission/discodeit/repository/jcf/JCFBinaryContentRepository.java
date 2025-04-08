@@ -12,35 +12,35 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JCFBinaryContentRepository implements BinaryContentRepository {
 
-    private final Map<UUID, BinaryContent> data = new HashMap<>();
+  private final Map<UUID, BinaryContent> data = new HashMap<>();
 
-    @Override
-    public UUID upsert(BinaryContent binaryContent) {
-        data.put(binaryContent.getId(), binaryContent);
-        return binaryContent.getId();
-    }
+  @Override
+  public BinaryContent upsert(BinaryContent binaryContent) {
+    data.put(binaryContent.getId(), binaryContent);
+    return binaryContent;
+  }
 
-    @Override
-    public List<BinaryContent> findAll() {
-        return new ArrayList<>(data.values());
-    }
+  @Override
+  public List<BinaryContent> findAll() {
+    return new ArrayList<>(data.values());
+  }
 
-    @Override
-    public BinaryContent findById(UUID id) {
-        return data.get(id);
-    }
+  @Override
+  public BinaryContent findById(UUID id) {
+    return data.get(id);
+  }
 
-    @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        Set<UUID> idSet = new HashSet<>(ids);
-        return data.values().stream()
-                .filter(content -> idSet.contains(content.getId()))
-                .collect(Collectors.toList());
-    }
+  @Override
+  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+    Set<UUID> idSet = new HashSet<>(ids);
+    return data.values().stream()
+        .filter(content -> idSet.contains(content.getId()))
+        .collect(Collectors.toList());
+  }
 
-    @Override
-    public void delete(UUID id) {
-        data.remove(id);
-    }
+  @Override
+  public void delete(UUID id) {
+    data.remove(id);
+  }
 }
 
