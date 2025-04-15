@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +15,10 @@ import org.springframework.stereotype.Service;
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
   @Override
-  public User login(UserLoginRequest loginRequest) {
+  public UserResponse login(UserLoginRequest loginRequest) {
     String username = loginRequest.username();
     String password = loginRequest.password();
 
@@ -28,6 +31,6 @@ public class BasicAuthService implements AuthService {
       throw new IllegalArgumentException("Wrong password");
     }
 
-    return user;
+    return userMapper.toResponse(user);
   }
 }

@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto2.response.ApiResponse;
-import com.sprint.mission.discodeit.dto2.response.FileMetaResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/binaryContents")
@@ -42,4 +39,20 @@ public class BinaryContentController {
         .status(HttpStatus.OK)
         .body(binaryContents);
   }
+
+  // 파일 다운로드
+  @GetMapping("{binaryContentId}/download")
+  public ResponseEntity<Resource> downloadFile(@PathVariable UUID binaryContentId) {
+    BinaryContent content = binaryContentService.findById(binaryContentId);
+
+    // 파일 데이터와 정보 구성
+    ByteArrayResource resource = new ByteArrayResource(content.getBytes());
+
+    return ResponseEntity.ok()
+        .contentLength(content.getSize())
+        .contentType(MediaType.parseMediaType(content.getContentType()))
+        .header("Content-Disposition", "attachment; filename=\"" + content.getFileName() + "\"")
+        .body(resource);
+  }
 }
+

@@ -24,27 +24,27 @@ public class ChannelController {
 
   // 공개 채널 생성
   @PostMapping("/public")
-  public ResponseEntity<Channel> createPublicChannel(
+  public ResponseEntity<ChannelResponse> createPublicChannel(
       @RequestBody PublicChannelCreateRequest request) {
-    Channel createdChannel = channelService.createPublicChannel(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
+    ChannelResponse createdChannelResponse = channelService.createPublicChannel(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdChannelResponse);
   }
 
   // 비공개 채널 생성
   @PostMapping("/private")
-  public ResponseEntity<Channel> createPrivateChannel(
+  public ResponseEntity<ChannelResponse> createPrivateChannel(
       @RequestBody PrivateChannelCreateRequest request) {
-    Channel createdChannel = channelService.createPrivateChannel(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
+    ChannelResponse createdChannelResponse = channelService.createPrivateChannel(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdChannelResponse);
   }
 
   // 공개 채널 정보 수정
   @PatchMapping("/{channelId}")
-  public ResponseEntity<Channel> updatePublicChannel(
+  public ResponseEntity<ChannelResponse> updatePublicChannel(
       @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-    Channel updatedChannel = channelService.update(channelId, request);
-    return ResponseEntity.ok(updatedChannel);
+    ChannelResponse updatedChannelResponse = channelService.update(channelId, request);
+    return ResponseEntity.ok(updatedChannelResponse);
   }
 
   // 채널 삭제

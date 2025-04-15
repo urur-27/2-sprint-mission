@@ -11,6 +11,8 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateUsernameException;
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,13 +33,16 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentMapper binaryContentMapper;
+  private final UserMapper userMapper;
 
   @Override
-  public User create(UserCreateRequest userCreateRequest,
+  public UserResponse create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
+    // 예외처리
     if (userRepository.existsByEmail(email)) {
       throw new DuplicateEmailException(email);
     }
@@ -45,6 +50,7 @@ public class BasicUserService implements UserService {
       throw new DuplicateUsernameException(username);
     }
 
+    // ProfileId 생성, UserService가 아니라 다른 곳에서 처리 고려하기
     UUID nullableProfileId = optionalProfileCreateRequest
         .map(profileRequest -> {
           String fileName = profileRequest.fileName();
@@ -64,7 +70,7 @@ public class BasicUserService implements UserService {
     UserStatus userStatus = new UserStatus(createdUser.getId(), now);
     userStatusRepository.upsert(userStatus);
 
-    return createdUser;
+    return userMapper.toResponse(createdUser);
   }
 
   @Override
@@ -76,7 +82,8 @@ public class BasicUserService implements UserService {
     boolean isOnline = userStatusRepository.isUserOnline(id);
 
     BinaryContent content = binaryContentRepository.findById(user.getProfileId());
-    BinaryContentResponse profile = content != null ? toDto(content) : null;
+    BinaryContentResponse profile =
+        content != null ? binaryContentMapper.toResponse(content) : null;
 
     return new UserResponse(
         user.getId(),
@@ -94,8 +101,14 @@ public class BasicUserService implements UserService {
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
-          BinaryContent content = binaryContentRepository.findById(user.getProfileId());
-          BinaryContentResponse profile = content != null ? toDto(content) : null;
+          UUID profileId = user.getProfileId();
+          BinaryContentResponse profile = null;
+
+          if (profileId != null) {
+            BinaryContent content = binaryContentRepository.findById(profileId);
+            profile = content != null ? binaryContentMapper.toResponse(content) : null;
+          }
+
           boolean isOnline = userStatusRepository.isUserOnline(user.getId());
 
           return new UserResponse(
@@ -112,7 +125,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserResponse update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId);
     if (user == null) {
@@ -145,7 +158,7 @@ public class BasicUserService implements UserService {
     String newPassword = userUpdateRequest.newPassword();
     user.updateUser(newUsername, newEmail, newPassword, nullableProfileId);
 
-    return userRepository.upsert(user);
+    return userMapper.toResponse(userRepository.upsert(user));
   }
 
   @Override
@@ -162,16 +175,4 @@ public class BasicUserService implements UserService {
     // 최종적으로 사용자 삭제
     userRepository.delete(id);
   }
-
-  // BinaryContentResponse Dto로 만들기
-  private BinaryContentResponse toDto(BinaryContent content) {
-    return new BinaryContentResponse(
-        content.getId(),
-        content.getFileName(),
-        content.getSize(),
-        content.getContentType()
-    );
-  }
-
-
 }

@@ -34,7 +34,7 @@ public class UserController {
 
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
-  public ResponseEntity<User> createUser(
+  public ResponseEntity<UserResponse> createUser(
       @RequestPart("userCreateRequest") String userCreateRequestJson,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     UserCreateRequest userCreateRequest;
@@ -50,7 +50,7 @@ public class UserController {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
 
-    User createdUser = userService.create(userCreateRequest, profileRequest);
+    UserResponse createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdUser);
@@ -58,13 +58,13 @@ public class UserController {
 
   // User 수정
   @PatchMapping(value = "/{userId}", consumes = "multipart/form-data")
-  public ResponseEntity<User> updateUser(
+  public ResponseEntity<UserResponse> updateUser(
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    UserResponse updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedUser);
@@ -78,7 +78,6 @@ public class UserController {
         .status(HttpStatus.NO_CONTENT)
         .build();
   }
-
 
   // 모든 유저 조회
   @GetMapping

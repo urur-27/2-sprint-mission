@@ -7,10 +7,10 @@ import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.invalid.InvalidChannelTypeException;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -18,8 +18,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,31 +28,28 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
+  private final ChannelMapper channelMapper;
 
   @Override
-  public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
+  public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
     Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.upsert(privateChannel);
 
     // 참여하는 User별 ReadStatus 생성
-//    request.userIds().forEach(userId -> {
-//      ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(), null);
-//      readStatusRepository.upsert(readStatus);
-//    });
     request.userIds().forEach(userId -> {
       ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(),
           privateChannel.getCreatedAt());
       readStatusRepository.upsert(readStatus);
     });
 
-    return privateChannel;
+    return channelMapper.toResponse(privateChannel);
   }
 
   @Override
-  public Channel createPublicChannel(PublicChannelCreateRequest request) {
+  public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
     Channel publicChannel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
     channelRepository.upsert(publicChannel);
-    return publicChannel;
+    return channelMapper.toResponse(publicChannel);
   }
 
   @Override
@@ -63,63 +58,28 @@ public class BasicChannelService implements ChannelService {
     if (channel == null) {
       throw new ChannelNotFoundException(id);
     }
-    // 해당 채널의 가장 최근 메시지 시간 조회
-    Instant lastMessageTime = messageRepository.findAll().stream()
-        .filter(msg -> msg.getChannelId().equals(id))
-        .findFirst()
-        .map(Message::getCreatedAt)
-        .orElse(null);
 
-    // PRIVATE 채널인 경우 참여한 User ID 조회
-    List<UUID> userIds = channel.getType() == ChannelType.PRIVATE
-        ? readStatusRepository.findUsersByChannelId(id)
-        : List.of();
+    return channelMapper.toResponse(channel);
 
-    return new ChannelResponse(
-        channel.getId(),
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        lastMessageTime,
-        userIds
-    );
   }
 
   @Override
   public List<ChannelResponse> findAllByUserId(UUID userId) {
-    List<Channel> allChannels = channelRepository.findAll();
-    List<ChannelResponse> responses = new ArrayList<>();
 
-    for (Channel channel : allChannels) {
-      Instant lastMessageTime = messageRepository.findAll().stream()
-          .filter(msg -> msg.getChannelId().equals(channel.getId()))
-          .map(Message::getCreatedAt)
-          .max(Instant::compareTo)
-          .orElse(null);
-
-      List<UUID> userIds = channel.getType() == ChannelType.PRIVATE
-          ? readStatusRepository.findUsersByChannelId(channel.getId())
-          : List.of();
-
-      // PRIVATE 채널은 참여한 User만 조회 가능
-      if (channel.getType() == ChannelType.PRIVATE && !userIds.contains(userId)) {
-        continue;
-      }
-
-      responses.add(new ChannelResponse(
-          channel.getId(),
-          channel.getType(),
-          channel.getName(),
-          channel.getDescription(),
-          lastMessageTime,
-          userIds
-      ));
-    }
-    return responses;
+    return channelRepository.findAll().stream()
+        .filter(channel -> {
+          if (channel.getType() == ChannelType.PRIVATE) {
+            List<UUID> userIds = readStatusRepository.findUsersByChannelId(channel.getId());
+            return userIds.contains(userId); // PRIVATE이면 참가 여부 확인
+          }
+          return true; // PUBLIC이면 무조건 포함
+        })
+        .map(channelMapper::toResponse)
+        .toList();
   }
 
   @Override
-  public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
+  public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId);
     if (channel == null) {
       throw new ChannelNotFoundException(channelId);
@@ -132,7 +92,7 @@ public class BasicChannelService implements ChannelService {
 
     channel.updateChannel(ChannelType.PUBLIC, request.newName(), request.newDescription());
     channelRepository.upsert(channel);
-    return channel;
+    return channelMapper.toResponse(channel);
   }
 
   @Override
