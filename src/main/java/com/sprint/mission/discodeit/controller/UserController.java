@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto2.data.UserDto;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
@@ -82,8 +82,8 @@ public class UserController {
 
   // 모든 유저 조회
   @GetMapping
-  public ResponseEntity<List<UserDto>> getUsers() {
-    List<UserDto> users = userService.findAll();
+  public ResponseEntity<List<UserResponse>> getUsers() {
+    List<UserResponse> users = userService.findAll();
     return ResponseEntity.ok(users);
   }
 

@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.data.UserDto;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 
@@ -19,11 +18,12 @@ public interface UserService {
 
   UserResponse findById(UUID id);  // User 조회 (패스워드 제외 & 온라인 상태 포함)
 
-  List<UserDto> findAll();  // 모든 User 조회 (패스워드 제외 & 온라인 상태 포함)
+  List<UserResponse> findAll();  // 모든 User 조회 (패스워드 제외 & 온라인 상태 포함)
 
   User update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest);  // User 정보 수정 (선택적 프로필 이미지 변경)
 
   void delete(UUID id);  // User 삭제 (BinaryContent, UserStatus 같이 삭제)
 
+//  UserDto toDto(User user);
 }

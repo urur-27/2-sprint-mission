@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 
-import com.sprint.mission.discodeit.dto2.data.ChannelDto;
 import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
@@ -38,8 +37,13 @@ public class BasicChannelService implements ChannelService {
     channelRepository.upsert(privateChannel);
 
     // 참여하는 User별 ReadStatus 생성
+//    request.userIds().forEach(userId -> {
+//      ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(), null);
+//      readStatusRepository.upsert(readStatus);
+//    });
     request.userIds().forEach(userId -> {
-      ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(), null);
+      ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(),
+          privateChannel.getCreatedAt());
       readStatusRepository.upsert(readStatus);
     });
 
@@ -82,9 +86,9 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public List<ChannelDto> findAllByUserId(UUID userId) {
+  public List<ChannelResponse> findAllByUserId(UUID userId) {
     List<Channel> allChannels = channelRepository.findAll();
-    List<ChannelDto> responses = new ArrayList<>();
+    List<ChannelResponse> responses = new ArrayList<>();
 
     for (Channel channel : allChannels) {
       Instant lastMessageTime = messageRepository.findAll().stream()
@@ -102,13 +106,13 @@ public class BasicChannelService implements ChannelService {
         continue;
       }
 
-      responses.add(new ChannelDto(
+      responses.add(new ChannelResponse(
           channel.getId(),
           channel.getType(),
           channel.getName(),
           channel.getDescription(),
-          userIds,
-          lastMessageTime
+          lastMessageTime,
+          userIds
       ));
     }
     return responses;

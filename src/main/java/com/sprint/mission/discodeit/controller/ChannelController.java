@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto2.data.ChannelDto;
+
 import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto2.response.ApiResponse;
 import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -57,9 +56,9 @@ public class ChannelController {
 
   // 특정 사용자가 볼 수 있는 채널 목록 조회
   @GetMapping
-  public ResponseEntity<List<ChannelDto>> getChannelsForUser(
+  public ResponseEntity<List<ChannelResponse>> getChannelsForUser(
       @RequestParam UUID userId) {
-    List<ChannelDto> channels = channelService.findAllByUserId(userId);
+    List<ChannelResponse> channels = channelService.findAllByUserId(userId);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(channels);

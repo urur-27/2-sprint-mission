@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.data.UserDto;
+import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -74,16 +74,40 @@ public class BasicUserService implements UserService {
       throw new NoSuchElementException("Could not find user with that ID. : " + id);
     }
     boolean isOnline = userStatusRepository.isUserOnline(id);
-    return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), isOnline);
+
+    BinaryContent content = binaryContentRepository.findById(user.getProfileId());
+    BinaryContentResponse profile = content != null ? toDto(content) : null;
+
+    return new UserResponse(
+        user.getId(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
+        user.getUsername(),
+        user.getEmail(),
+        profile,
+        isOnline
+    );
   }
 
 
   @Override
-  public List<UserDto> findAll() {
+  public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
-        .map(user -> new UserDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-            user.getUsername(), user.getEmail(), user.getProfileId(),
-            userStatusRepository.isUserOnline(user.getId())))
+        .map(user -> {
+          BinaryContent content = binaryContentRepository.findById(user.getProfileId());
+          BinaryContentResponse profile = content != null ? toDto(content) : null;
+          boolean isOnline = userStatusRepository.isUserOnline(user.getId());
+
+          return new UserResponse(
+              user.getId(),
+              user.getCreatedAt(),
+              user.getUpdatedAt(),
+              user.getUsername(),
+              user.getEmail(),
+              profile,
+              isOnline
+          );
+        })
         .toList();
   }
 
@@ -138,5 +162,16 @@ public class BasicUserService implements UserService {
     // 최종적으로 사용자 삭제
     userRepository.delete(id);
   }
+
+  // BinaryContentResponse Dto로 만들기
+  private BinaryContentResponse toDto(BinaryContent content) {
+    return new BinaryContentResponse(
+        content.getId(),
+        content.getFileName(),
+        content.getSize(),
+        content.getContentType()
+    );
+  }
+
 
 }
