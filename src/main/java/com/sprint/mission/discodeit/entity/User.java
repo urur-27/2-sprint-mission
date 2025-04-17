@@ -1,33 +1,49 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class User extends BaseEntity {
-    // 유저 이름과 이메일
-    private String username;
-    private String email;
-    private String password;
-    private UUID profileId;
+@Entity
+@Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class User extends BaseUpdatableEntity {
 
-    public User(String username, String email, String password, UUID profileId) {
-        super(); // BaseEntity 생성자 호출
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profileId = profileId;
-    }
+  // 유저 이름과 이메일
+  private String username;
+  private String email;
+  private String password;
 
+  @ManyToOne
+  @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "fk_users_profile"))
+  private BinaryContent profile;
 
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
 
-    // 업데이트 메서드
-    public void updateUser(String username, String email, String password, UUID profileId) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profileId = profileId;
-        updateTimestamp(); // updatedAt 변경
-    }
+  // JPA를 통해 연관관계를 설정한 경우에는 생성자에 포함될 필요가 없나?
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
+
+  // 왜 업데이트 메서드는 사라지는지?
+  // 업데이트 메서드
+  public void updateUser(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
 }

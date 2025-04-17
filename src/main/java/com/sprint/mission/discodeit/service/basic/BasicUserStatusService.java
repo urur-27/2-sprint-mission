@@ -35,7 +35,7 @@ public class BasicUserStatusService implements UserStatusService {
       throw new IllegalStateException("The UserStatus for that user already exists.");
     }
 
-    UserStatus userStatus = new UserStatus(request.userId(), request.lastAccessedAt());
+    UserStatus userStatus = new UserStatus(user, request.lastAccessedAt());
     userStatusRepository.upsert(userStatus);
 
     return userStatus;
@@ -85,6 +85,6 @@ public class BasicUserStatusService implements UserStatusService {
       throw new IllegalArgumentException("The UserStatus does not exist.");
     }
 
-    userStatusRepository.deleteByUserId(existing.getUserId());
+    userStatusRepository.deleteByUserId(existing.getUser().getId());
   }
 }

@@ -8,13 +8,18 @@ import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.invalid.InvalidChannelTypeException;
+import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
 
+  private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
@@ -35,10 +41,18 @@ public class BasicChannelService implements ChannelService {
     Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.upsert(privateChannel);
 
-    // 참여하는 User별 ReadStatus 생성
-    request.userIds().forEach(userId -> {
-      ReadStatus readStatus = new ReadStatus(userId, privateChannel.getId(),
-          privateChannel.getCreatedAt());
+    List<User> users = request.userIds().stream()
+        .map(userId -> {
+          User user = userRepository.findById(userId);
+          if (user == null) {
+            throw new UserNotFoundException(userId);
+          }
+          return user;
+        })
+        .toList();
+
+    users.forEach(user -> {
+      ReadStatus readStatus = new ReadStatus(user, privateChannel, privateChannel.getCreatedAt());
       readStatusRepository.upsert(readStatus);
     });
 

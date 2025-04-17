@@ -46,12 +46,12 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // 중복 방지
     readStatusRepository.findAllByUser(request.userId()).forEach(r -> {
-      if (r.getChannelId().equals(request.channelId())) {
+      if (r.getChannel().getId().equals(request.channelId())) {
         throw new DuplicateReadStatusException(request.userId(), request.channelId());
       }
     });
 
-    ReadStatus newReadStatus = new ReadStatus(request.userId(), request.channelId(),
+    ReadStatus newReadStatus = new ReadStatus(user, channel,
         request.lastReadAt());
     readStatusRepository.upsert(newReadStatus);
     return newReadStatus;
@@ -94,4 +94,5 @@ public class BasicReadStatusService implements ReadStatusService {
 
     readStatusRepository.delete(readStatusId);
   }
+
 }

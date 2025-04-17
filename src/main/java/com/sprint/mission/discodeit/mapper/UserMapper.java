@@ -19,8 +19,8 @@ public class UserMapper {
   public UserResponse toResponse(User user) {
     BinaryContentResponse profile = null;
 
-    if (user.getProfileId() != null) {
-      BinaryContent content = binaryContentRepository.findById(user.getProfileId());
+    if (user.getProfile().getId() != null) {
+      BinaryContent content = binaryContentRepository.findById(user.getProfile().getId());
       if (content != null) {
         profile = new BinaryContentResponse(
             content.getId(),

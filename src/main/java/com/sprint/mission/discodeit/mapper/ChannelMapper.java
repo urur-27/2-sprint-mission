@@ -25,7 +25,7 @@ public class ChannelMapper {
   public ChannelResponse toResponse(Channel channel) {
     // 가장 최근 메시지 시간 계산
     Instant lastMessageAt = messageRepository.findAll().stream()
-        .filter(msg -> msg.getChannelId().equals(channel.getId()))
+        .filter(msg -> msg.getChannel().getId().equals(channel.getId()))
         .map(Message::getCreatedAt)
         .max(Comparator.naturalOrder())
         .orElse(null);

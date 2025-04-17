@@ -24,8 +24,8 @@ public class MessageMapper {
 
   public MessageResponse toResponse(Message message) {
     // 작성자 정보 구성
-    User user = userRepository.findById(message.getAuthorId());
-    BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
+    User user = message.getAuthor();
+    BinaryContent profile = user.getProfile();
     BinaryContentResponse profileResponse = profile != null ? new BinaryContentResponse(
         profile.getId(), profile.getFileName(), profile.getSize(), profile.getContentType()
     ) : null;
@@ -42,8 +42,7 @@ public class MessageMapper {
     );
 
     // 첨부 파일 변환
-    List<BinaryContentResponse> attachments = message.getAttachmentIds().stream()
-        .map(binaryContentRepository::findById)
+    List<BinaryContentResponse> attachments = message.getAttachments().stream()
         .filter(Objects::nonNull)
         .map(content -> new BinaryContentResponse(
             content.getId(), content.getFileName(), content.getSize(), content.getContentType()
@@ -55,7 +54,7 @@ public class MessageMapper {
         message.getCreatedAt(),
         message.getUpdatedAt(),
         message.getContent(),
-        message.getChannelId(),
+        message.getChannel().getId(),
         author,
         attachments
     );

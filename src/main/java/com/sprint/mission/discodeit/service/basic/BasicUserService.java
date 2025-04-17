@@ -43,31 +43,20 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
 
     // 예외처리
-    if (userRepository.existsByEmail(email)) {
-      throw new DuplicateEmailException(email);
-    }
-    if (userRepository.existsByUsername(username)) {
-      throw new DuplicateUsernameException(username);
-    }
+    validateDuplicate(username, email);
 
-    // ProfileId 생성, UserService가 아니라 다른 곳에서 처리 고려하기
-    UUID nullableProfileId = optionalProfileCreateRequest
-        .map(profileRequest -> {
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, bytes);
-          return binaryContentRepository.upsert(binaryContent).getId();
-        })
+    // 프로필 저장
+    BinaryContent newProfile = optionalProfileCreateRequest
+        .map(this::saveBinaryContent)
         .orElse(null);
+
     String password = userCreateRequest.password();
 
-    User user = new User(username, email, password, nullableProfileId);
+    User user = new User(username, email, password, newProfile);
     User createdUser = userRepository.upsert(user);
 
     Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(createdUser.getId(), now);
+    UserStatus userStatus = new UserStatus(createdUser, now);
     userStatusRepository.upsert(userStatus);
 
     return userMapper.toResponse(createdUser);
@@ -81,7 +70,7 @@ public class BasicUserService implements UserService {
     }
     boolean isOnline = userStatusRepository.isUserOnline(id);
 
-    BinaryContent content = binaryContentRepository.findById(user.getProfileId());
+    BinaryContent content = binaryContentRepository.findById(user.getProfile().getId());
     BinaryContentResponse profile =
         content != null ? binaryContentMapper.toResponse(content) : null;
 
@@ -101,7 +90,7 @@ public class BasicUserService implements UserService {
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
-          UUID profileId = user.getProfileId();
+          UUID profileId = user.getProfile().getId();
           BinaryContentResponse profile = null;
 
           if (profileId != null) {
@@ -134,29 +123,21 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
-    if (userRepository.existsByEmail(newEmail)) {
-      throw new DuplicateEmailException(newEmail);
-    }
-    if (userRepository.existsByUsername(newUsername)) {
-      throw new DuplicateUsernameException(newUsername);
+    validateDuplicate(newUsername, newEmail);
+
+    // 새로운 프로필이 있는 경우에만 이전 프로필 삭제
+    if (optionalProfileCreateRequest.isPresent()) {
+      Optional.ofNullable(user.getProfile())
+          .ifPresent(existing -> binaryContentRepository.delete(existing.getId()));
     }
 
-    UUID nullableProfileId = optionalProfileCreateRequest
-        .map(profileRequest -> {
-          Optional.ofNullable(user.getProfileId())
-              .ifPresent(binaryContentRepository::delete);
-
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, bytes);
-          return binaryContentRepository.upsert(binaryContent).getId();
-        })
+    // 새 프로필 저장
+    BinaryContent newProfile = optionalProfileCreateRequest
+        .map(this::saveBinaryContent)
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
-    user.updateUser(newUsername, newEmail, newPassword, nullableProfileId);
+    user.updateUser(newUsername, newEmail, newPassword, newProfile);
 
     return userMapper.toResponse(userRepository.upsert(user));
   }
@@ -170,9 +151,31 @@ public class BasicUserService implements UserService {
     }
 
     // 관련 데이터 삭제 (프로필 이미지, 유저 상태)
-    binaryContentRepository.delete(user.getProfileId());
+    binaryContentRepository.delete(user.getProfile().getId());
     userStatusRepository.deleteByUserId(id);
     // 최종적으로 사용자 삭제
     userRepository.delete(id);
   }
+
+  // email과 username 중복 체크
+  private void validateDuplicate(String username, String email) {
+    if (userRepository.existsByUsername(username)) {
+      throw new DuplicateUsernameException(username);
+    }
+    if (userRepository.existsByEmail(email)) {
+      throw new DuplicateEmailException(email);
+    }
+  }
+
+  // BianryContent 생성 로직
+  private BinaryContent saveBinaryContent(BinaryContentCreateRequest request) {
+    BinaryContent content = new BinaryContent(
+        request.fileName(),
+        (long) request.bytes().length,
+        request.contentType(),
+        request.bytes()
+    );
+    return binaryContentRepository.upsert(content);
+  }
+
 }

@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.exception.FileProcessingException;
 import com.sprint.mission.discodeit.exception.notfound.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.MultipartFileMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -35,6 +36,7 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final MessageMapper messageMapper;
+  private final MultipartFileMapper multipartFileMapper;
 
   @Override
   public Message create(MessageCreateRequest request, List<MultipartFile> attachments) {
@@ -48,32 +50,20 @@ public class BasicMessageService implements MessageService {
       throw new ChannelNotFoundException(request.channelId());
     }
 
-    List<UUID> attachmentIds = new ArrayList<>();
-
-    // 첨부 파일 처리
+    List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null) {
       for (MultipartFile attachment : attachments) {
-        try {
-          BinaryContent binaryContent = new BinaryContent(
-              attachment.getOriginalFilename(),
-              attachment.getSize(),
-              attachment.getContentType(),
-              attachment.getBytes()
-          );
-          UUID attachmentId = binaryContentRepository.upsert(binaryContent).getId();
-          attachmentIds.add(attachmentId);
-        } catch (IOException e) {
-          throw new FileProcessingException("An error occurred while processing the attachment.",
-              e);
-        }
+        BinaryContent binaryContent = multipartFileMapper.toEntity(attachment);
+        BinaryContent saved = binaryContentRepository.upsert(binaryContent);
+        binaryContents.add(saved); // 저장된 객체 사용
       }
     }
 
     Message message = new Message(
         request.content(),
-        request.authorId(),
-        request.channelId(),
-        attachmentIds
+        channel,
+        user,
+        binaryContents
     );
 
     return messageRepository.upsert(message);
@@ -92,7 +82,7 @@ public class BasicMessageService implements MessageService {
   public List<Message> findAllByChannelId(UUID channelId) {
     return messageRepository.findAll()
         .stream()
-        .filter(message -> channelId.equals(message.getChannelId())) // Null-safe: 왼쪽 기준 비교
+        .filter(message -> channelId.equals(message.getChannel().getId())) // Null-safe: 왼쪽 기준 비교
         .collect(Collectors.toList());
   }
 
@@ -113,8 +103,8 @@ public class BasicMessageService implements MessageService {
     if (message == null) {
       throw new MessageNotFoundException(id);
     }
-    message.getAttachmentIds()
-        .forEach(binaryContentRepository::delete);
+    message.getAttachments()
+        .forEach(attachment -> binaryContentRepository.delete(attachment.getId()));
 
     messageRepository.delete(id);
   }

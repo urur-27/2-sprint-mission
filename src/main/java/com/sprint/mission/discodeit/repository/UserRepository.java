@@ -16,7 +16,7 @@ public interface UserRepository {
 
   List<User> findAll();  // 모든 데이터 찾기
 
-  void update(UUID id, String newUsername, String newEmail, String newPassword, UUID profileId);
+//  void update(UUID id, String newUsername, String newEmail, String newPassword, UUID profileId);
 
   void delete(UUID id);
 
