@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
@@ -18,13 +19,12 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.ReadStatusService;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,49 +37,43 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
 
   @Override
+  @Transactional
   public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
     Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
-    channelRepository.upsert(privateChannel);
+    channelRepository.save(privateChannel);
 
     List<User> users = request.userIds().stream()
-        .map(userId -> {
-          User user = userRepository.findById(userId);
-          if (user == null) {
-            throw new UserNotFoundException(userId);
-          }
-          return user;
-        })
+        .map(userId -> userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId)))
         .toList();
 
     users.forEach(user -> {
       ReadStatus readStatus = new ReadStatus(user, privateChannel, privateChannel.getCreatedAt());
-      readStatusRepository.upsert(readStatus);
+      readStatusRepository.save(readStatus);
     });
 
     return channelMapper.toResponse(privateChannel);
   }
 
   @Override
+  @Transactional
   public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
     Channel publicChannel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
-    channelRepository.upsert(publicChannel);
+    channelRepository.save(publicChannel);
     return channelMapper.toResponse(publicChannel);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChannelResponse findById(UUID id) {
-    Channel channel = channelRepository.findById(id);
-    if (channel == null) {
-      throw new ChannelNotFoundException(id);
-    }
-
+    Channel channel = channelRepository.findById(id)
+        .orElseThrow(() -> new ChannelNotFoundException(id));
     return channelMapper.toResponse(channel);
-
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChannelResponse> findAllByUserId(UUID userId) {
-
     return channelRepository.findAll().stream()
         .filter(channel -> {
           if (channel.getType() == ChannelType.PRIVATE) {
@@ -93,33 +87,33 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional
   public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
-    Channel channel = channelRepository.findById(channelId);
-    if (channel == null) {
-      throw new ChannelNotFoundException(channelId);
-    }
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
     if (channel.getType() == ChannelType.PRIVATE) {
       throw new InvalidChannelTypeException(
           "Private channels cannot be modified via this endpoint.");
     }
 
+    // 변경 감지 방식 적용(Dirty Checking)
     channel.updateChannel(ChannelType.PUBLIC, request.newName(), request.newDescription());
-    channelRepository.upsert(channel);
+//    channelRepository.save(channel);
     return channelMapper.toResponse(channel);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
-    Channel channel = channelRepository.findById(id);
-
-    if (channel == null) {
-      throw new ChannelNotFoundException(id);
-    }
+    Channel channel = channelRepository.findById(id)
+        .orElseThrow(() -> new ChannelNotFoundException(id));
 
     // 관련 도메인 같이 삭제
-    messageRepository.delete(id);
+    List<Message> messages = messageRepository.findByChannelId(id);
+    // cascade 없음을 가정 message, readstatus는 수동 삭제
+    messageRepository.deleteAll(messages);
     readStatusRepository.deleteByChannelId(id);
-    channelRepository.delete(id);
+    channelRepository.delete(channel);
   }
 }

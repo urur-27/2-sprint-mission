@@ -34,8 +34,8 @@ public class ChannelMapper {
     List<UserResponse> participants = channel.getType() == ChannelType.PRIVATE
         ? readStatusRepository.findUsersByChannelId(channel.getId()).stream()
         .map(userRepository::findById)
-        .filter(Objects::nonNull)
-        .map(userMapper::toResponse)
+        .flatMap(Optional::stream)                         // Optional<User> → User
+        .map(userMapper::toResponse)                       // User → UserResponse
         .toList()
         : List.of();
 

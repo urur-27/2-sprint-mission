@@ -2,19 +2,14 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
 
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface MessageRepository {
+@Repository
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  // 저장 로직을 위한 인터페이스
-  Message upsert(Message message);  // 저장 (JCF: 메모리(Map)에 저장, File: 파일로 저장)
-
-  Message findById(UUID id);  // ID를 기반으로 찾기
-
-  List<Message> findAll();  // 모든 데이터 찾기
-
-  void update(UUID id, String newContent);
-
-  void delete(UUID id);
+  List<Message> findByChannelId(UUID channelId);
 }

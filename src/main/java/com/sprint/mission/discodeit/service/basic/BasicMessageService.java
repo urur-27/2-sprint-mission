@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -39,22 +40,20 @@ public class BasicMessageService implements MessageService {
   private final MultipartFileMapper multipartFileMapper;
 
   @Override
+  @Transactional
   public Message create(MessageCreateRequest request, List<MultipartFile> attachments) {
     // 요청받은 id를 가진 Author, Channel이 있는지
-    User user = userRepository.findById(request.authorId());
-    if (user == null) {
-      throw new UserNotFoundException(request.authorId());
-    }
-    Channel channel = channelRepository.findById(request.channelId());
-    if (channel == null) {
-      throw new ChannelNotFoundException(request.channelId());
-    }
+    User user = userRepository.findById(request.authorId())
+        .orElseThrow(() -> new UserNotFoundException(request.authorId()));
+
+    Channel channel = channelRepository.findById(request.channelId())
+        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
     List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null) {
       for (MultipartFile attachment : attachments) {
         BinaryContent binaryContent = multipartFileMapper.toEntity(attachment);
-        BinaryContent saved = binaryContentRepository.upsert(binaryContent);
+        BinaryContent saved = binaryContentRepository.save(binaryContent);
         binaryContents.add(saved); // 저장된 객체 사용
       }
     }
@@ -66,19 +65,18 @@ public class BasicMessageService implements MessageService {
         binaryContents
     );
 
-    return messageRepository.upsert(message);
+    return messageRepository.save(message);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Message findById(UUID id) {
-    Message message = messageRepository.findById(id);
-    if (message == null) {
-      throw new MessageNotFoundException(id);
-    }
-    return message;
+    return messageRepository.findById(id)
+        .orElseThrow(() -> new MessageNotFoundException(id));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Message> findAllByChannelId(UUID channelId) {
     return messageRepository.findAll()
         .stream()
@@ -87,25 +85,24 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional
   public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
-    Message message = findById(messageId);
-    if (message == null) {
-      throw new MessageNotFoundException(messageId);
-    }
+    Message message = messageRepository.findById(messageId)
+        .orElseThrow(() -> new MessageNotFoundException(messageId));
+    // Dirty checking
     message.updateMessage(request.newContent());
-    messageRepository.update(messageId, request.newContent());
     return messageMapper.toResponse(message);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
-    Message message = messageRepository.findById(id);
-    if (message == null) {
-      throw new MessageNotFoundException(id);
-    }
-    message.getAttachments()
-        .forEach(attachment -> binaryContentRepository.delete(attachment.getId()));
+    Message message = messageRepository.findById(id)
+        .orElseThrow(() -> new MessageNotFoundException(id));
 
-    messageRepository.delete(id);
+    // 첨부파일 직접 삭제 (Cascade 설정이 없음). 설정 변경 고민
+    binaryContentRepository.deleteAll(message.getAttachments());
+
+    messageRepository.delete(message);
   }
 }

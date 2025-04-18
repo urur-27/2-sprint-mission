@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,19 +20,18 @@ public class UserMapper {
   public UserResponse toResponse(User user) {
     BinaryContentResponse profile = null;
 
-    if (user.getProfile().getId() != null) {
-      BinaryContent content = binaryContentRepository.findById(user.getProfile().getId());
-      if (content != null) {
-        profile = new BinaryContentResponse(
-            content.getId(),
-            content.getFileName(),
-            content.getSize(),
-            content.getContentType()
-        );
-      }
+    if (user.getProfile() != null && user.getProfile().getId() != null) {
+      profile = binaryContentRepository.findById(user.getProfile().getId())
+          .map(content -> new BinaryContentResponse(
+              content.getId(),
+              content.getFileName(),
+              content.getSize(),
+              content.getContentType()
+          ))
+          .orElse(null);
     }
 
-    boolean isOnline = userStatusRepository.isUserOnline(user.getId());
+    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now());
 
     return new UserResponse(
         user.getId(),

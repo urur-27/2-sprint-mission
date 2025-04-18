@@ -5,19 +5,11 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface BinaryContentRepository {
-
-  // 파일 저장 (Create)
-  BinaryContent upsert(BinaryContent binaryContent);
-
-  // 모든 파일 조회 (Read)
-  List<BinaryContent> findAll();
-
-  // UUID를 통해 조회
-  BinaryContent findById(UUID userId);
+@Repository
+public interface BinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
 
   List<BinaryContent> findAllByIdIn(List<UUID> ids);
-
-  void delete(UUID id);
 }

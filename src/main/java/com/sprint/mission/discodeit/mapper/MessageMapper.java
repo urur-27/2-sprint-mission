@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.mapper;
 
+import com.sprint.mission.discodeit.common.CodeitConstants;
 import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto2.response.MessageResponse;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -18,19 +18,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MessageMapper {
 
-  private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
-  private final BinaryContentRepository binaryContentRepository;
 
   public MessageResponse toResponse(Message message) {
     // 작성자 정보 구성
     User user = message.getAuthor();
     BinaryContent profile = user.getProfile();
+    Instant threshold = Instant.now()
+        .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS);
     BinaryContentResponse profileResponse = profile != null ? new BinaryContentResponse(
         profile.getId(), profile.getFileName(), profile.getSize(), profile.getContentType()
     ) : null;
 
-    boolean isOnline = userStatusRepository.isUserOnline(user.getId());
+    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), threshold);
     UserResponse author = new UserResponse(
         user.getId(),
         user.getCreatedAt(),

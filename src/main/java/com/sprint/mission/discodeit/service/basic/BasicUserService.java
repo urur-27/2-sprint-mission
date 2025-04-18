@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.CodeitConstants;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateUsernameException;
+import com.sprint.mission.discodeit.exception.notfound.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -23,8 +25,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,42 +39,40 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
 
   @Override
+  @Transactional
   public UserResponse create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    String username = userCreateRequest.username();
-    String email = userCreateRequest.email();
-
     // 예외처리
-    validateDuplicate(username, email);
+    validateDuplicate(userCreateRequest.username(), userCreateRequest.email());
 
     // 프로필 저장
     BinaryContent newProfile = optionalProfileCreateRequest
         .map(this::saveBinaryContent)
         .orElse(null);
 
-    String password = userCreateRequest.password();
+    User newUser = userRepository.save(new User(
+        userCreateRequest.username(),
+        userCreateRequest.email(),
+        userCreateRequest.password(),
+        newProfile
+    ));
 
-    User user = new User(username, email, password, newProfile);
-    User createdUser = userRepository.upsert(user);
+    userStatusRepository.save(new UserStatus(newUser, Instant.now()));
 
-    Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(createdUser, now);
-    userStatusRepository.upsert(userStatus);
-
-    return userMapper.toResponse(createdUser);
+    return userMapper.toResponse(newUser);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findById(UUID id) {
-    User user = userRepository.findById(id);
-    if (user == null) {
-      throw new NoSuchElementException("Could not find user with that ID. : " + id);
-    }
-    boolean isOnline = userStatusRepository.isUserOnline(id);
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
 
-    BinaryContent content = binaryContentRepository.findById(user.getProfile().getId());
-    BinaryContentResponse profile =
-        content != null ? binaryContentMapper.toResponse(content) : null;
+    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
+        .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
+
+    BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
+        .map(binaryContentMapper::toResponse).orElse(null);
 
     return new UserResponse(
         user.getId(),
@@ -87,18 +87,16 @@ public class BasicUserService implements UserService {
 
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
-          UUID profileId = user.getProfile().getId();
-          BinaryContentResponse profile = null;
+          BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
+              .map(binaryContentMapper::toResponse)
+              .orElse(null);
 
-          if (profileId != null) {
-            BinaryContent content = binaryContentRepository.findById(profileId);
-            profile = content != null ? binaryContentMapper.toResponse(content) : null;
-          }
-
-          boolean isOnline = userStatusRepository.isUserOnline(user.getId());
+          boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
+              .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
 
           return new UserResponse(
               user.getId(),
@@ -114,12 +112,11 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional
   public UserResponse update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    User user = userRepository.findById(userId);
-    if (user == null) {
-      throw new UserNotFoundException(userId);
-    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
@@ -128,7 +125,7 @@ public class BasicUserService implements UserService {
     // 새로운 프로필이 있는 경우에만 이전 프로필 삭제
     if (optionalProfileCreateRequest.isPresent()) {
       Optional.ofNullable(user.getProfile())
-          .ifPresent(existing -> binaryContentRepository.delete(existing.getId()));
+          .ifPresent(binaryContentRepository::delete);
     }
 
     // 새 프로필 저장
@@ -139,22 +136,21 @@ public class BasicUserService implements UserService {
     String newPassword = userUpdateRequest.newPassword();
     user.updateUser(newUsername, newEmail, newPassword, newProfile);
 
-    return userMapper.toResponse(userRepository.upsert(user));
+    return userMapper.toResponse(user);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     // 사용자 존재 여부 확인
-    User user = userRepository.findById(id);
-    if (user == null) {
-      throw new UserNotFoundException(id);
-    }
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
 
     // 관련 데이터 삭제 (프로필 이미지, 유저 상태)
-    binaryContentRepository.delete(user.getProfile().getId());
-    userStatusRepository.deleteByUserId(id);
+    Optional.ofNullable(user.getProfile())
+        .ifPresent(binaryContentRepository::delete);
     // 최종적으로 사용자 삭제
-    userRepository.delete(id);
+    userRepository.delete(user);
   }
 
   // email과 username 중복 체크
@@ -175,7 +171,7 @@ public class BasicUserService implements UserService {
         request.contentType(),
         request.bytes()
     );
-    return binaryContentRepository.upsert(content);
+    return binaryContentRepository.save(content);
   }
 
 }

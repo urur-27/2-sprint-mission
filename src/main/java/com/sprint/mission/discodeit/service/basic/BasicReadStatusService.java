@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,67 +33,55 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
   @Override
+  @Transactional
   public ReadStatus create(ReadStatusCreateRequest request) {
     // 관련된 User와 Channel이 존재하는지 확인
-    User user = userRepository.findById(request.userId());
-    if (user == null) {
-      throw new UserNotFoundException(request.userId());
-    }
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-    Channel channel = channelRepository.findById(request.channelId());
-    if (channel == null) {
-      throw new ChannelNotFoundException(request.channelId());
-    }
-
-    // 중복 방지
-    readStatusRepository.findAllByUser(request.userId()).forEach(r -> {
-      if (r.getChannel().getId().equals(request.channelId())) {
-        throw new DuplicateReadStatusException(request.userId(), request.channelId());
-      }
-    });
+    Channel channel = channelRepository.findById(request.channelId())
+        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
     ReadStatus newReadStatus = new ReadStatus(user, channel,
         request.lastReadAt());
-    readStatusRepository.upsert(newReadStatus);
-    return newReadStatus;
+    return readStatusRepository.save(newReadStatus);
   }
 
   // ID로 ReadStatus 조회
   @Override
-  public ReadStatus find(UUID readStatusId) {
-    return Optional.ofNullable(readStatusRepository.findById(readStatusId))
-        .orElseThrow(
-            () -> new NoSuchElementException("read status not found with id: " + readStatusId));
+  @Transactional(readOnly = true)
+  public ReadStatus findById(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
   }
 
   // 사용자의 Id로 조회
   @Override
+  @Transactional(readOnly = true)
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUser(userId);
+    return readStatusRepository.findAllByUserId(userId);
   }
 
   // ReadStatus 업데이트
   @Override
+  @Transactional
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId);
-    if (readStatus == null) {
-      throw new ReadStatusNotFoundException(readStatusId);
-    }
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
     readStatus.updateReadStatus(newLastReadAt);
-    return readStatusRepository.upsert(readStatus);
+    return readStatus;
   }
 
   // ReadStatus 삭제
   @Override
+  @Transactional
   public void delete(UUID readStatusId) {
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId);
-    if (readStatus == null) {
-      throw new NoSuchElementException("read status not found with id: " + readStatusId);
-    }
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
-    readStatusRepository.delete(readStatusId);
+    readStatusRepository.delete(readStatus);
   }
 
 }
