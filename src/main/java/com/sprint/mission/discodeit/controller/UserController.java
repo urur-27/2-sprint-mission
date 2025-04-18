@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
-import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class UserController {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
-  private final AuthService authService;
+  private final UserMapper userMapper;
 
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
@@ -50,10 +50,10 @@ public class UserController {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
 
-    UserResponse createdUser = userService.create(userCreateRequest, profileRequest);
+    User createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdUser);
+        .body(userMapper.toResponse(createdUser));
   }
 
   // User 수정
@@ -64,10 +64,10 @@ public class UserController {
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    UserResponse updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUser);
+        .body(userMapper.toResponse(updatedUser));
   }
 
   // User 삭제
@@ -82,8 +82,8 @@ public class UserController {
   // 모든 유저 조회
   @GetMapping
   public ResponseEntity<List<UserResponse>> getUsers() {
-    List<UserResponse> users = userService.findAll();
-    return ResponseEntity.ok(users);
+    List<User> users = userService.findAll();
+    return ResponseEntity.ok(users.stream().map(userMapper::toResponse).toList());
   }
 
   // 온라인 상태 갱신

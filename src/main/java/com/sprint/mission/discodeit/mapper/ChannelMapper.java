@@ -29,7 +29,6 @@ public class ChannelMapper {
         .map(Message::getCreatedAt)
         .max(Comparator.naturalOrder())
         .orElse(null);
-
     // 참가자 목록 가져오기 (PRIVATE일 경우만)
     List<UserResponse> participants = channel.getType() == ChannelType.PRIVATE
         ? readStatusRepository.findUsersByChannelId(channel.getId()).stream()

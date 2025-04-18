@@ -44,8 +44,8 @@ public class MessageController {
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest messageUpdateRequest) {
 
-    MessageResponse updatedMessage = messageService.update(messageId, messageUpdateRequest);
-    return ResponseEntity.status(HttpStatus.CREATED).body(updatedMessage);
+    Message updatedMessage = messageService.update(messageId, messageUpdateRequest);
+    return ResponseEntity.status(HttpStatus.CREATED).body(messageMapper.toResponse(updatedMessage));
   }
 
   // 메시지 삭제

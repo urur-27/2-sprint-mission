@@ -36,7 +36,6 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final MessageMapper messageMapper;
   private final MultipartFileMapper multipartFileMapper;
 
   @Override
@@ -86,12 +85,12 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+  public Message update(UUID messageId, MessageUpdateRequest request) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(messageId));
     // Dirty checking
     message.updateMessage(request.newContent());
-    return messageMapper.toResponse(message);
+    return message;
   }
 
   @Override

@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.mapper;
 
+import com.sprint.mission.discodeit.common.CodeitConstants;
 import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -14,25 +13,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMapper {
 
-  private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentMapper binaryContentMapper;
 
   public UserResponse toResponse(User user) {
-    BinaryContentResponse profile = null;
+    BinaryContentResponse profile = binaryContentMapper.toResponse(user.getProfile());
 
-    if (user.getProfile() != null && user.getProfile().getId() != null) {
-      profile = binaryContentRepository.findById(user.getProfile().getId())
-          .map(content -> new BinaryContentResponse(
-              content.getId(),
-              content.getFileName(),
-              content.getSize(),
-              content.getContentType()
-          ))
-          .orElse(null);
-    }
-
-    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now());
-
+    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
+        .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
+    
     return new UserResponse(
         user.getId(),
         user.getCreatedAt(),

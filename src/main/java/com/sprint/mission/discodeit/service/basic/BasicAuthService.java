@@ -16,21 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
 
   @Override
   @Transactional(readOnly = true)
-  public UserResponse login(UserLoginRequest loginRequest) {
+  public User login(UserLoginRequest loginRequest) {
     String username = loginRequest.username();
-    String password = loginRequest.password();
+//    String password = loginRequest.password();
 
     User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new UserNotFoundException(username));
 
-    if (user.getPassword().equals(password) == false) {
-      throw new IllegalArgumentException("Wrong password");
-    }
-
-    return userMapper.toResponse(user);
+    return user;
   }
 }

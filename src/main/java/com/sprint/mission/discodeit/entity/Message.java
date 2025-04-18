@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -12,6 +13,8 @@ import lombok.Getter;
 
 import java.util.List;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
@@ -25,11 +28,12 @@ public class Message extends BaseUpdatableEntity {
   private String content;
 
   @ManyToOne
-  @JoinColumn(name = "channel_id", nullable = false)
+  @JoinColumn(name = "channel_id", nullable = false, foreignKey = @ForeignKey(name = "fk_messages_channel"))
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Channel channel;
 
   @ManyToOne
-  @JoinColumn(name = "author_id")
+  @JoinColumn(name = "author_id", foreignKey = @ForeignKey(name = "fk_messages_author"))
   private User author;
 
   @ManyToMany

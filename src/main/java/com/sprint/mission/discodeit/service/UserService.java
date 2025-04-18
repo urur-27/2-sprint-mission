@@ -13,14 +13,14 @@ import java.util.UUID;
 public interface UserService {
 
   //CRUD 기능을 선언
-  UserResponse create(UserCreateRequest userCreateRequest,
+  User create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest);  // User 생성 (선택적 프로필 이미지 포함)
 
-  UserResponse findById(UUID id);  // User 조회 (패스워드 제외 & 온라인 상태 포함)
+  User findById(UUID id);  // User 조회 (패스워드 제외 & 온라인 상태 포함)
 
-  List<UserResponse> findAll();  // 모든 User 조회 (패스워드 제외 & 온라인 상태 포함)
+  List<User> findAll();  // 모든 User 조회 (패스워드 제외 & 온라인 상태 포함)
 
-  UserResponse update(UUID userId, UserUpdateRequest userUpdateRequest,
+  User update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest);  // User 정보 수정 (선택적 프로필 이미지 변경)
 
   void delete(UUID id);  // User 삭제 (BinaryContent, UserStatus 같이 삭제)

@@ -5,21 +5,22 @@ import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
 
   //CRUD 기능을 선언
-  ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request);
+  Channel createPrivateChannel(PrivateChannelCreateRequest request);
 
-  ChannelResponse createPublicChannel(PublicChannelCreateRequest request);
+  Channel createPublicChannel(PublicChannelCreateRequest request);
 
-  ChannelResponse findById(UUID id);
+  Channel findById(UUID id);
 
-  List<ChannelResponse> findAllByUserId(UUID id);
+  List<Channel> findAllByUserId(UUID id);
 
-  ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request);
+  Channel update(UUID channelId, PublicChannelUpdateRequest request);
 
   void delete(UUID id);
 }

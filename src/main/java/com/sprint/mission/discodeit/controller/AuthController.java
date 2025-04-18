@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+  private final UserMapper userMapper;
 
   @PostMapping("/login")
   public ResponseEntity<UserResponse> login(@RequestBody UserLoginRequest loginRequest) {
-    UserResponse user = authService.login(loginRequest);
-    return ResponseEntity.ok(user);
+    User user = authService.login(loginRequest);
+    return ResponseEntity.ok(userMapper.toResponse(user));
   }
 }

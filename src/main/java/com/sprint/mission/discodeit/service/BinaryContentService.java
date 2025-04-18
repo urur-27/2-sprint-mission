@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.List;

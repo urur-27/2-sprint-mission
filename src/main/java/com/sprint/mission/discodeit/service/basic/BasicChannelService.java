@@ -34,11 +34,10 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
-  private final ChannelMapper channelMapper;
 
   @Override
   @Transactional
-  public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
+  public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
     Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(privateChannel);
 
@@ -52,28 +51,28 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(readStatus);
     });
 
-    return channelMapper.toResponse(privateChannel);
+    return privateChannel;
   }
 
   @Override
   @Transactional
-  public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
+  public Channel createPublicChannel(PublicChannelCreateRequest request) {
     Channel publicChannel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
     channelRepository.save(publicChannel);
-    return channelMapper.toResponse(publicChannel);
+    return publicChannel;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public ChannelResponse findById(UUID id) {
+  public Channel findById(UUID id) {
     Channel channel = channelRepository.findById(id)
         .orElseThrow(() -> new ChannelNotFoundException(id));
-    return channelMapper.toResponse(channel);
+    return channel;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ChannelResponse> findAllByUserId(UUID userId) {
+  public List<Channel> findAllByUserId(UUID userId) {
     return channelRepository.findAll().stream()
         .filter(channel -> {
           if (channel.getType() == ChannelType.PRIVATE) {
@@ -82,13 +81,12 @@ public class BasicChannelService implements ChannelService {
           }
           return true; // PUBLIC이면 무조건 포함
         })
-        .map(channelMapper::toResponse)
         .toList();
   }
 
   @Override
   @Transactional
-  public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
+  public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
@@ -100,7 +98,7 @@ public class BasicChannelService implements ChannelService {
     // 변경 감지 방식 적용(Dirty Checking)
     channel.updateChannel(ChannelType.PUBLIC, request.newName(), request.newDescription());
 //    channelRepository.save(channel);
-    return channelMapper.toResponse(channel);
+    return channel;
   }
 
   @Override

@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -14,13 +16,19 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"username"}),
+    @UniqueConstraint(columnNames = {"email"})
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUpdatableEntity {
 
   // 유저 이름과 이메일
+  @Column(nullable = false)
   private String username;
+  @Column(nullable = false)
   private String email;
+  @Column(nullable = false)
   private String password;
 
   @ManyToOne
@@ -30,7 +38,6 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
-  // JPA를 통해 연관관계를 설정한 경우에는 생성자에 포함될 필요가 없나?
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
@@ -38,7 +45,6 @@ public class User extends BaseUpdatableEntity {
     this.profile = profile;
   }
 
-  // 왜 업데이트 메서드는 사라지는지?
   // 업데이트 메서드
   public void updateUser(String username, String email, String password, BinaryContent profile) {
     this.username = username;

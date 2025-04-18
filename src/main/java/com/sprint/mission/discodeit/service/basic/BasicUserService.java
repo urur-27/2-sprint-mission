@@ -36,11 +36,10 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final UserMapper userMapper;
 
   @Override
   @Transactional
-  public UserResponse create(UserCreateRequest userCreateRequest,
+  public User create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     // 예외처리
     validateDuplicate(userCreateRequest.username(), userCreateRequest.email());
@@ -59,61 +58,46 @@ public class BasicUserService implements UserService {
 
     userStatusRepository.save(new UserStatus(newUser, Instant.now()));
 
-    return userMapper.toResponse(newUser);
+    return newUser;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public UserResponse findById(UUID id) {
-    User user = userRepository.findById(id)
+  public User findById(UUID id) {
+
+//    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
+//        .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
+//
+//    BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
+//        .map(binaryContentMapper::toResponse).orElse(null);
+
+    return userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(id));
-
-    boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
-        .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
-
-    BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
-        .map(binaryContentMapper::toResponse).orElse(null);
-
-    return new UserResponse(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        profile,
-        isOnline
-    );
   }
 
 
   @Override
   @Transactional(readOnly = true)
-  public List<UserResponse> findAll() {
-    return userRepository.findAll().stream()
-        .map(user -> {
-          BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
-              .map(binaryContentMapper::toResponse)
-              .orElse(null);
-
-          boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
-              .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
-
-          return new UserResponse(
-              user.getId(),
-              user.getCreatedAt(),
-              user.getUpdatedAt(),
-              user.getUsername(),
-              user.getEmail(),
-              profile,
-              isOnline
-          );
-        })
-        .toList();
+  public List<User> findAll() {
+    return userRepository.findAll();
+//    .stream()
+//        .map(user -> {
+//          BinaryContentResponse profile = Optional.ofNullable(user.getProfile())
+//              .map(binaryContentMapper::toResponse)
+//              .orElse(null);
+//
+//          boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
+//              .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
+//
+//          return user;
+//          );
+//        })
+//        .toList();
   }
 
   @Override
   @Transactional
-  public UserResponse update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
@@ -136,7 +120,7 @@ public class BasicUserService implements UserService {
     String newPassword = userUpdateRequest.newPassword();
     user.updateUser(newUsername, newEmail, newPassword, newProfile);
 
-    return userMapper.toResponse(user);
+    return user;
   }
 
   @Override

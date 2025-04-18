@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,14 +25,17 @@ import lombok.NoArgsConstructor;
 // 사용자별 각 채널에 읽지 않은 메시지를 확인하기 위해 활용합니다.
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false,
+      foreignKey = @ForeignKey(name = "fk_read_status_user", foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"))
   private User user;
 
-  @ManyToOne
-  @JoinColumn(name = "channel_id", nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false,
+      foreignKey = @ForeignKey(name = "fk_read_status_channel", foreignKeyDefinition = "FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE"))
   private Channel channel;
 
+  @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
 
   public ReadStatus(User user, Channel channel, Instant lastReadAt) {
