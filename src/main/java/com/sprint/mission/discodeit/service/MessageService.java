@@ -19,7 +19,7 @@ public interface MessageService {
   Message findById(UUID id);
 
   //  List<Message> findAllByChannelId(UUID channelId);
-  Slice<MessageResponse> findAllByChannelId(UUID channelId, Pageable pageable);
+  Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
   Message update(UUID messageId, MessageUpdateRequest request);
 

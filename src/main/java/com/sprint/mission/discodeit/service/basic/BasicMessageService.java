@@ -89,14 +89,8 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional(readOnly = true)
-  public Slice<MessageResponse> findAllByChannelId(UUID channelId, Pageable pageable) {
-    Slice<Message> messages = messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId,
-        pageable);
-    List<MessageResponse> dtoList = messages.stream()
-        .map(messageMapper::toResponse)
-        .toList();
-
-    return new SliceImpl<>(dtoList, pageable, messages.hasNext());
+  public Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable) {
+    return messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId, pageable);
   }
 
   @Override

@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -63,10 +64,15 @@ public class MessageController {
       @RequestParam UUID channelId,
       @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-    Slice<MessageResponse> messageResponses = messageService.findAllByChannelId(channelId,
-        pageable);
+    Slice<Message> messages = messageService.findAllByChannelId(channelId, pageable);
 
-    return ResponseEntity.ok(PageResponseMapper.fromSlice(messageResponses));
+    List<MessageResponse> messageResponses = messages.stream()
+        .map(messageMapper::toResponse)
+        .toList();
+
+    return ResponseEntity.ok(PageResponseMapper.fromSlice(
+        new SliceImpl<>(messageResponses, pageable, messages.hasNext())
+    ));
   }
 
 }
