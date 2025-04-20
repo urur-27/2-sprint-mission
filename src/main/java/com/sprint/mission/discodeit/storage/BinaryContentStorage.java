@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.storage;
 import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import java.io.InputStream;
 import java.util.UUID;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 
 
@@ -18,4 +17,5 @@ public interface BinaryContentStorage {
   // BinaryContentResponse 정보를 바탕으로 파일을 다운로드할 수 있는 응답을 반환
   ResponseEntity<?> download(BinaryContentResponse binaryContentResponse);
 
+  void delete(UUID uuid);
 }

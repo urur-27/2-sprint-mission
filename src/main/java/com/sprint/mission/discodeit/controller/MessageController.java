@@ -8,12 +8,9 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -72,10 +69,4 @@ public class MessageController {
     return ResponseEntity.ok(PageResponseMapper.fromSlice(messageResponses));
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleException(Exception e) {
-    e.printStackTrace(); // 콘솔에 전체 예외 로그 출력
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body("에러 발생: " + e.getMessage());
-  }
 }

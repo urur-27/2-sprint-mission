@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto2.response.MessageResponse;
@@ -7,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.FileProcessingException;
 import com.sprint.mission.discodeit.exception.notfound.MessageNotFoundException;
@@ -49,10 +51,10 @@ public class BasicMessageService implements MessageService {
   public Message create(MessageCreateRequest request, List<MultipartFile> attachments) {
     // 요청받은 id를 가진 Author, Channel이 있는지
     User user = userRepository.findById(request.authorId())
-        .orElseThrow(() -> new UserNotFoundException(request.authorId()));
+        .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
     List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null) {
@@ -62,7 +64,7 @@ public class BasicMessageService implements MessageService {
         try {
           binaryContentStorage.put(saved.getId(), attachment.getBytes());
         } catch (IOException e) {
-          throw new RuntimeException("Failed to read bytes from attachment", e);
+          throw new RestException(ResultCode.FILE_PROCESSING_ERROR);
         }
         binaryContents.add(saved); // 저장된 객체 사용
       }
@@ -82,7 +84,7 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public Message findById(UUID id) {
     return messageRepository.findById(id)
-        .orElseThrow(() -> new MessageNotFoundException(id));
+        .orElseThrow(() -> new RestException(ResultCode.MESSAGE_NOT_FOUND));
   }
 
   @Override
@@ -96,18 +98,12 @@ public class BasicMessageService implements MessageService {
 
     return new SliceImpl<>(dtoList, pageable, messages.hasNext());
   }
-//  public List<Message> findAllByChannelId(UUID channelId) {
-//    return messageRepository.findAll()
-//        .stream()
-//        .filter(message -> channelId.equals(message.getChannel().getId())) // Null-safe: 왼쪽 기준 비교
-//        .collect(Collectors.toList());
-//  }
 
   @Override
   @Transactional
   public Message update(UUID messageId, MessageUpdateRequest request) {
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new MessageNotFoundException(messageId));
+        .orElseThrow(() -> new RestException(ResultCode.MESSAGE_NOT_FOUND));
     // Dirty checking
     message.updateMessage(request.newContent());
     return message;
@@ -117,7 +113,7 @@ public class BasicMessageService implements MessageService {
   @Transactional
   public void delete(UUID id) {
     Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new MessageNotFoundException(id));
+        .orElseThrow(() -> new RestException(ResultCode.MESSAGE_NOT_FOUND));
 
     // 첨부파일 직접 삭제 (Cascade 설정이 없음). 설정 변경 고민
     binaryContentRepository.deleteAll(message.getAttachments());

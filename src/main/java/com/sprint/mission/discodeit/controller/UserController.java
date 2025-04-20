@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
@@ -9,11 +10,14 @@ import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.dto2.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,7 @@ public class UserController {
   private final UserStatusService userStatusService;
   private final UserMapper userMapper;
   private final UserStatusMapper userStatusMapper;
+  private final BasicBinaryContentService binaryContentService;
 
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
@@ -46,12 +51,11 @@ public class UserController {
     try {
       userCreateRequest = objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
     } catch (IOException e) {
-      throw new InvalidJsonFormatException(
-          "The JSON format of the member creation request is invalid.", e);
+      throw new RestException(ResultCode.INVALID_JSON);
     }
 
-    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
-        .flatMap(this::resolveProfileRequest);
+    Optional<BinaryContentCreateRequest> profileRequest =
+        binaryContentService.resolveProfileRequest(profile);
 
     User createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
@@ -65,8 +69,8 @@ public class UserController {
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
-        .flatMap(this::resolveProfileRequest);
+    Optional<BinaryContentCreateRequest> profileRequest =
+        binaryContentService.resolveProfileRequest(profile);
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -99,20 +103,4 @@ public class UserController {
         .body(userStatusMapper.toResponse(updatedUserStatus));
   }
 
-  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
-    if (profileFile.isEmpty()) {
-      return Optional.empty();
-    } else {
-      try {
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-            profileFile.getOriginalFilename(),
-            profileFile.getContentType(),
-            profileFile.getBytes()
-        );
-        return Optional.of(binaryContentCreateRequest);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.invalid.InvalidChannelTypeException;
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
@@ -44,7 +46,7 @@ public class BasicChannelService implements ChannelService {
 
     List<User> users = request.userIds().stream()
         .map(userId -> userRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException(userId)))
+            .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND)))
         .toList();
 
     users.forEach(user -> {
@@ -67,7 +69,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   public Channel findById(UUID id) {
     Channel channel = channelRepository.findById(id)
-        .orElseThrow(() -> new ChannelNotFoundException(id));
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
     return channel;
   }
 
@@ -89,11 +91,10 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
     if (channel.getType() == ChannelType.PRIVATE) {
-      throw new InvalidChannelTypeException(
-          "Private channels cannot be modified via this endpoint.");
+      throw new RestException(ResultCode.INVALID_CHANNEL_TYPE);
     }
 
     // 변경 감지 방식 적용(Dirty Checking)
@@ -106,7 +107,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   public void delete(UUID id) {
     Channel channel = channelRepository.findById(id)
-        .orElseThrow(() -> new ChannelNotFoundException(id));
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
     // 관련 도메인 같이 삭제
     List<Message> messages = messageRepository.findByChannelId(id);

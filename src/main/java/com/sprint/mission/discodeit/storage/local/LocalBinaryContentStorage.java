@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.storage.local;
 
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       Files.createDirectories(root);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to initialize binary content root directory", e);
+      throw new RestException(ResultCode.FILE_INITIALIZATION_ERROR);
     }
   }
 
@@ -46,7 +47,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       Files.write(path, bytes);
       return uuid;
     } catch (IOException e) {
-      throw new RuntimeException("Failed to write binary content", e);
+      throw new RestException(ResultCode.FILE_WRITE_ERROR);
     }
   }
 
@@ -56,7 +57,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       return Files.newInputStream(path);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to read binary content", e);
+      throw new RestException(ResultCode.FILE_PROCESSING_ERROR);
     }
   }
 
@@ -74,7 +75,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
               "attachment; filename=\"" + binaryContentResponse.fileName() + "\"")
           .body(resource);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to download binary content", e);
+      throw new RestException(ResultCode.FILE_PROCESSING_ERROR);
+    }
+  }
+
+  @Override
+  public void delete(UUID uuid) {
+    Path path = resolvePath(uuid);
+    try {
+      Files.deleteIfExists(path);
+    } catch (IOException e) {
+      throw new RestException(ResultCode.FILE_PROCESSING_ERROR);
     }
   }
 

@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateReadStatusException;
 import com.sprint.mission.discodeit.exception.notfound.ReadStatusNotFoundException;
@@ -37,10 +39,10 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatus create(ReadStatusCreateRequest request) {
     // 관련된 User와 Channel이 존재하는지 확인
     User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new UserNotFoundException(request.userId()));
+        .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
     ReadStatus newReadStatus = new ReadStatus(user, channel,
         request.lastReadAt());
@@ -52,7 +54,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Transactional(readOnly = true)
   public ReadStatus findById(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
   }
 
   // 사용자의 Id로 조회
@@ -68,7 +70,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
 
     readStatus.updateReadStatus(newLastReadAt);
     return readStatus;
@@ -79,7 +81,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Transactional
   public void delete(UUID readStatusId) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
 
     readStatusRepository.delete(readStatus);
   }
