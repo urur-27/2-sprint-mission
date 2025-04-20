@@ -17,11 +17,16 @@ public class UserMapper {
   private final BinaryContentMapper binaryContentMapper;
 
   public UserResponse toResponse(User user) {
-    BinaryContentResponse profile = binaryContentMapper.toResponse(user.getProfile());
+    // profile은 nullable
+    BinaryContentResponse profile = null;
+
+    if (user.getProfile() != null) {
+      profile = binaryContentMapper.toResponse(user.getProfile());
+    }
 
     boolean isOnline = userStatusRepository.isUserOnline(user.getId(), Instant.now()
         .minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS));
-    
+
     return new UserResponse(
         user.getId(),
         user.getCreatedAt(),

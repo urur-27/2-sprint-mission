@@ -6,10 +6,12 @@ import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
+import com.sprint.mission.discodeit.dto2.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.invalid.InvalidJsonFormatException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class UserController {
   private final UserService userService;
   private final UserStatusService userStatusService;
   private final UserMapper userMapper;
+  private final UserStatusMapper userStatusMapper;
 
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
@@ -88,12 +91,12 @@ public class UserController {
 
   // 온라인 상태 갱신
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatus> updateUserStatus(@PathVariable UUID userId,
+  public ResponseEntity<UserStatusResponse> updateUserStatus(@PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     UserStatus updatedUserStatus = userStatusService.update(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUserStatus);
+        .body(userStatusMapper.toResponse(updatedUserStatus));
   }
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

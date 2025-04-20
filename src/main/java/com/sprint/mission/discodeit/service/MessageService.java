@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MessageService {
@@ -16,7 +18,8 @@ public interface MessageService {
 
   Message findById(UUID id);
 
-  List<Message> findAllByChannelId(UUID channelId);
+  //  List<Message> findAllByChannelId(UUID channelId);
+  Slice<MessageResponse> findAllByChannelId(UUID channelId, Pageable pageable);
 
   Message update(UUID messageId, MessageUpdateRequest request);
 

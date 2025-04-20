@@ -6,11 +6,16 @@ import com.sprint.mission.discodeit.dto2.response.MessageResponse;
 import com.sprint.mission.discodeit.dto2.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -59,45 +64,12 @@ public class MessageController {
   @GetMapping
   public ResponseEntity<PageResponse<MessageResponse>> getMessagesByChannel(
       @RequestParam UUID channelId,
-      Pageable pageable) {
+      @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-    List<Message> allMessages = messageService.findAllByChannelId(channelId);
-    List<MessageResponse> allResponses = allMessages.stream()
-        .map(messageMapper::toResponse)
-        .collect(Collectors.toList());
+    Slice<MessageResponse> messageResponses = messageService.findAllByChannelId(channelId,
+        pageable);
 
-    // Comparator을 이용해 MessageResponse의 createAt() 값을 기준으로 정렬하는 기준 제작
-    Comparator<MessageResponse> comparator = Comparator.comparing(MessageResponse::createdAt);
-    if (pageable.getSort().stream().anyMatch(order ->
-        order.getProperty().equals("createdAt") && order.getDirection().isDescending())) {
-      comparator = comparator.reversed();
-    }
-    allResponses.sort(comparator);
-
-    // 페이지네이션: MessageResponse 리스트에서 수행
-    int page = pageable.getPageNumber();
-    int size = pageable.getPageSize();
-    int fromIndex = page * size;
-    int toIndex = Math.min(fromIndex + size, allResponses.size());
-
-    List<MessageResponse> paginated;
-    if (fromIndex >= allResponses.size()) {
-      paginated = List.of(); // 빈 리스트 반환
-    } else {
-      paginated = allResponses.subList(fromIndex, toIndex);
-    }
-    boolean hasNext = toIndex < allMessages.size();
-
-    // MessageResponse로 생성
-    PageResponse<MessageResponse> pageResponse = new PageResponse<>(
-        paginated,
-        page,
-        size,
-        hasNext,
-        allResponses.size()
-    );
-
-    return ResponseEntity.ok(pageResponse);
+    return ResponseEntity.ok(PageResponseMapper.fromSlice(messageResponses));
   }
 
   @ExceptionHandler(Exception.class)

@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -109,6 +110,7 @@ public class BasicChannelService implements ChannelService {
 
     // 관련 도메인 같이 삭제
     List<Message> messages = messageRepository.findByChannelId(id);
+
     // cascade 없음을 가정 message, readstatus는 수동 삭제
     messageRepository.deleteAll(messages);
     readStatusRepository.deleteByChannelId(id);

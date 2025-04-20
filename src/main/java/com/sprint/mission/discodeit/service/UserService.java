@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 
 import com.sprint.mission.discodeit.entity.User;

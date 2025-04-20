@@ -7,7 +7,7 @@ public record PageResponse<T>(
     int number,
     int size,
     boolean hasNext,
-    long totalElements
+    Long totalElements // nullable
 ) {
 
 }

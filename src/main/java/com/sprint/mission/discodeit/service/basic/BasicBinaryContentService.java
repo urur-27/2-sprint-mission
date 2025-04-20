@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.notfound.BinaryContentNotFoundExce
 import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   @Transactional
@@ -25,12 +27,15 @@ public class BasicBinaryContentService implements BinaryContentService {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
+
     BinaryContent binaryContent = new BinaryContent(
         fileName,
         (long) bytes.length,
-        contentType,
-        bytes
+        contentType
     );
+
+    // 실제 데이터 저장
+    binaryContentStorage.put(binaryContent.getId(), bytes);
     return binaryContentRepository.save(binaryContent);
   }
 
@@ -52,5 +57,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   public void delete(UUID id) {
     BinaryContent binaryContent = findById(id);
     binaryContentRepository.delete(binaryContent);
+//    // 저장소에서도 삭제
+//    binaryContentStorage.delete(id);
   }
 }

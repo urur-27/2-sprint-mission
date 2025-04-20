@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
-  private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   @Transactional
@@ -152,10 +153,16 @@ public class BasicUserService implements UserService {
     BinaryContent content = new BinaryContent(
         request.fileName(),
         (long) request.bytes().length,
-        request.contentType(),
-        request.bytes()
+        request.contentType()
     );
-    return binaryContentRepository.save(content);
+
+    // 먼저 DB에 저장해서 ID를 생성
+    BinaryContent savedContent = binaryContentRepository.save(content);
+
+    // ID가 생긴 후에야 파일 저장 가능
+    binaryContentStorage.put(savedContent.getId(), request.bytes());
+
+    return savedContent;
   }
 
 }

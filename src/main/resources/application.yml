@@ -18,4 +18,8 @@ discodeit:
   repository:
     type: jcf   # jcf | file
     file-directory: output/
+  storage:
+    type: local
+    local:
+      root-path: ./binary-storage
 

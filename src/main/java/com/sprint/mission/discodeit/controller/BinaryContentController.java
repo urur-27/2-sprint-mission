@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -22,6 +23,7 @@ public class BinaryContentController {
 
   private final BinaryContentService binaryContentService;
   private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
 
   // 단일 파일 조회
   @GetMapping("/{binaryContentId}")
@@ -45,17 +47,11 @@ public class BinaryContentController {
 
   // 파일 다운로드
   @GetMapping("{binaryContentId}/download")
-  public ResponseEntity<Resource> downloadFile(@PathVariable UUID binaryContentId) {
+  public ResponseEntity<?> downloadFile(@PathVariable UUID binaryContentId) {
     BinaryContent content = binaryContentService.findById(binaryContentId);
+    BinaryContentResponse response = binaryContentMapper.toResponse(content);
+    return binaryContentStorage.download(response);
 
-    // 파일 데이터와 정보 구성
-    ByteArrayResource resource = new ByteArrayResource(content.getBytes());
-
-    return ResponseEntity.ok()
-        .contentLength(content.getSize())
-        .contentType(MediaType.parseMediaType(content.getContentType()))
-        .header("Content-Disposition", "attachment; filename=\"" + content.getFileName() + "\"")
-        .body(resource);
   }
 }
 

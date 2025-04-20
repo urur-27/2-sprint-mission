@@ -2,9 +2,10 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
 
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +13,9 @@ import org.springframework.stereotype.Repository;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   List<Message> findByChannelId(UUID channelId);
+
+  Slice<Message> findByChannelIdOrderByCreatedAtDesc(UUID channelId,
+      Pageable pageable); // Slice와 JPA를 통해 자동으로 LIMIT, OFFSET, ORDER BY 등을 포함한 쿼리 생성
+
 }
+

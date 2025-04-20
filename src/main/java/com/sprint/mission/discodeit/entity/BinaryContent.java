@@ -26,13 +26,12 @@ public class BinaryContent extends BaseEntity {
   @Column(name = "content_type", length = 100, nullable = false)
   private String contentType; // 파일의 MIME 타입 (예: image/png)
 
-  @Column(name = "bytes", nullable = false, columnDefinition = "BYTEA")
-  private byte[] bytes; // 실제 데이터 (효율적인 저장을 위해 변경)
+//  @Column(name = "bytes", nullable = false, columnDefinition = "BYTEA")
+//  private byte[] bytes; // 실제 데이터 (효율적인 저장을 위해 변경)
 
-  public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+  public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
-    this.bytes = bytes;
   }
 }
