@@ -1,10 +1,16 @@
 package com.sprint.mission.discodeit.dto2.response;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record UserResponse(
-        UUID id,
-        String username,
-        String email,
-        boolean isOnline // 사용자의 온라인 상태 정보 추가
-) {}
+    UUID id,
+    Instant createdAt,
+    Instant updatedAt,
+    String username,
+    String email,
+    BinaryContentResponse profile,
+    Boolean online
+) {
+
+}

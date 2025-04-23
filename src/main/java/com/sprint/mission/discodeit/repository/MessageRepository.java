@@ -4,17 +4,18 @@ import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface MessageRepository {
+@Repository
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  // 저장 로직을 위한 인터페이스
-  Message upsert(Message message);  // 저장 (JCF: 메모리(Map)에 저장, File: 파일로 저장)
+  List<Message> findByChannelId(UUID channelId);
 
-  Message findById(UUID id);  // ID를 기반으로 찾기
+  Slice<Message> findByChannelIdOrderByCreatedAtDesc(UUID channelId,
+      Pageable pageable); // Slice와 JPA를 통해 자동으로 LIMIT, OFFSET, ORDER BY 등을 포함한 쿼리 생성
 
-  List<Message> findAll();  // 모든 데이터 찾기
-
-  void update(UUID id, String newContent);
-
-  void delete(UUID id);
 }
+

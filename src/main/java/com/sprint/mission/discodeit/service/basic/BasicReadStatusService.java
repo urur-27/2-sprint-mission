@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateReadStatusException;
 import com.sprint.mission.discodeit.exception.notfound.ReadStatusNotFoundException;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,66 +35,55 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
   @Override
+  @Transactional
   public ReadStatus create(ReadStatusCreateRequest request) {
     // 관련된 User와 Channel이 존재하는지 확인
-    User user = userRepository.findById(request.userId());
-    if (user == null) {
-      throw new UserNotFoundException(request.userId());
-    }
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND));
 
-    Channel channel = channelRepository.findById(request.channelId());
-    if (channel == null) {
-      throw new ChannelNotFoundException(request.channelId());
-    }
+    Channel channel = channelRepository.findById(request.channelId())
+        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
-    // 중복 방지
-    readStatusRepository.findAllByUser(request.userId()).forEach(r -> {
-      if (r.getChannelId().equals(request.channelId())) {
-        throw new DuplicateReadStatusException(request.userId(), request.channelId());
-      }
-    });
-
-    ReadStatus newReadStatus = new ReadStatus(request.userId(), request.channelId(),
+    ReadStatus newReadStatus = new ReadStatus(user, channel,
         request.lastReadAt());
-    readStatusRepository.upsert(newReadStatus);
-    return newReadStatus;
+    return readStatusRepository.save(newReadStatus);
   }
 
   // ID로 ReadStatus 조회
   @Override
-  public ReadStatus find(UUID readStatusId) {
-    return Optional.ofNullable(readStatusRepository.findById(readStatusId))
-        .orElseThrow(
-            () -> new NoSuchElementException("read status not found with id: " + readStatusId));
+  @Transactional(readOnly = true)
+  public ReadStatus findById(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
   }
 
   // 사용자의 Id로 조회
   @Override
+  @Transactional(readOnly = true)
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUser(userId);
+    return readStatusRepository.findAllByUserId(userId);
   }
 
   // ReadStatus 업데이트
   @Override
+  @Transactional
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId);
-    if (readStatus == null) {
-      throw new ReadStatusNotFoundException(readStatusId);
-    }
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
 
     readStatus.updateReadStatus(newLastReadAt);
-    return readStatusRepository.upsert(readStatus);
+    return readStatus;
   }
 
   // ReadStatus 삭제
   @Override
+  @Transactional
   public void delete(UUID readStatusId) {
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId);
-    if (readStatus == null) {
-      throw new NoSuchElementException("read status not found with id: " + readStatusId);
-    }
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new RestException(ResultCode.READ_STATUS_NOT_FOUND));
 
-    readStatusRepository.delete(readStatusId);
+    readStatusRepository.delete(readStatus);
   }
+
 }
