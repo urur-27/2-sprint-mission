@@ -7,11 +7,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @Entity
@@ -28,6 +28,7 @@ public class UserStatus extends BaseUpdatableEntity {
   @Column(name = "last_active_at", nullable = false)
   private Instant lastActiveAt;
 
+  @Builder
   public UserStatus(User user, Instant lastActiveAt) {
     this.user = user;
     this.lastActiveAt = lastActiveAt;

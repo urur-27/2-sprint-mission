@@ -1,22 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.CodeitConstants;
 import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.duplicate.DuplicateUsernameException;
-import com.sprint.mission.discodeit.exception.notfound.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -52,12 +43,12 @@ public class BasicUserService implements UserService {
         .map(this::saveBinaryContent)
         .orElse(null);
 
-    User newUser = userRepository.save(new User(
-        userCreateRequest.username(),
-        userCreateRequest.email(),
-        userCreateRequest.password(),
-        newProfile
-    ));
+    User newUser = User.builder()
+        .username(userCreateRequest.username())
+        .email(userCreateRequest.email())
+        .password(userCreateRequest.password())
+        .profile(newProfile)
+        .build();
 
     userStatusRepository.save(new UserStatus(newUser, Instant.now()));
 

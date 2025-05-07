@@ -4,8 +4,6 @@ import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.exception.notfound.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -33,11 +31,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
 
-    BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType
-    );
+    BinaryContent binaryContent = BinaryContent.builder()
+        .fileName(fileName)
+        .size((long) bytes.length)
+        .contentType(contentType)
+        .build();
 
     // 실제 데이터 저장
     try {

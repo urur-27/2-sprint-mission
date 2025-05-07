@@ -16,8 +16,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.util.Collections;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +35,11 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
-    Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
+    Channel privateChannel = Channel.builder()
+        .type(ChannelType.PRIVATE)
+        .name(null)
+        .description(null)
+        .build();
     channelRepository.save(privateChannel);
 
     List<User> users = request.userIds().stream()
@@ -60,7 +62,11 @@ public class BasicChannelService implements ChannelService {
       throw new RestException(ResultCode.INVALID_CHANNEL_DATA);
     }
 
-    Channel publicChannel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
+    Channel publicChannel = Channel.builder()
+        .type(ChannelType.PUBLIC)
+        .name(request.name())
+        .description(request.description())
+        .build();
     channelRepository.save(publicChannel);
     return publicChannel;
   }

@@ -9,10 +9,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.util.UUID;
 import lombok.NoArgsConstructor;
 
 @Getter
@@ -38,6 +38,7 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
 
+  @Builder
   public ReadStatus(User user, Channel channel, Instant lastReadAt) {
     this.user = user;
     this.channel = channel;

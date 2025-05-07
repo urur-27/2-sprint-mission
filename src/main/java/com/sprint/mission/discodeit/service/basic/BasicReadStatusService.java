@@ -7,10 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.duplicate.DuplicateReadStatusException;
-import com.sprint.mission.discodeit.exception.notfound.ReadStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,8 +38,12 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(request.channelId())
         .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
-    ReadStatus newReadStatus = new ReadStatus(user, channel,
-        request.lastReadAt());
+    ReadStatus newReadStatus = ReadStatus.builder()
+        .user(user)
+        .channel(channel)
+        .lastReadAt(request.lastReadAt())
+        .build();
+
     return readStatusRepository.save(newReadStatus);
   }
 

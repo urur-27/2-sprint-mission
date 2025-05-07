@@ -3,19 +3,12 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto2.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.FileProcessingException;
-import com.sprint.mission.discodeit.exception.notfound.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.MultipartFileMapper;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -26,11 +19,9 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +35,6 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final MultipartFileMapper multipartFileMapper;
   private final BinaryContentStorage binaryContentStorage;
-  private final MessageMapper messageMapper;
 
   @Override
   @Transactional
@@ -70,13 +60,12 @@ public class BasicMessageService implements MessageService {
       }
     }
 
-    Message message = new Message(
-        request.content(),
-        channel,
-        user,
-        binaryContents
-    );
-
+    Message message = Message.builder()
+        .content(request.content())
+        .channel(channel)
+        .author(user)
+        .attachments(binaryContents)
+        .build();
     return messageRepository.save(message);
   }
 
