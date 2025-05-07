@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.basic;
 
 
 import com.sprint.mission.discodeit.common.code.ResultCode;
-import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
@@ -12,17 +11,14 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.exception.notfound.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.invalid.InvalidChannelTypeException;
-import com.sprint.mission.discodeit.exception.notfound.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.Collections;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,6 +56,10 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   public Channel createPublicChannel(PublicChannelCreateRequest request) {
+    if (request.name().isBlank()) {
+      throw new RestException(ResultCode.INVALID_CHANNEL_DATA);
+    }
+
     Channel publicChannel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
     channelRepository.save(publicChannel);
     return publicChannel;
@@ -97,9 +97,12 @@ public class BasicChannelService implements ChannelService {
       throw new RestException(ResultCode.INVALID_CHANNEL_TYPE);
     }
 
+    if (request.newName().isBlank()) {
+      throw new RestException(ResultCode.INVALID_CHANNEL_DATA);
+    }
+
     // 변경 감지 방식 적용(Dirty Checking)
     channel.updateChannel(ChannelType.PUBLIC, request.newName(), request.newDescription());
-//    channelRepository.save(channel);
     return channel;
   }
 

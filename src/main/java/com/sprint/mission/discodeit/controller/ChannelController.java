@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class ChannelController {
   // 공개 채널 생성
   @PostMapping("/public")
   public ResponseEntity<ChannelResponse> createPublicChannel(
-      @RequestBody PublicChannelCreateRequest request) {
+      @Valid @RequestBody PublicChannelCreateRequest request) {
     Channel createdChannel = channelService.createPublicChannel(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(channelMapper.toResponse(createdChannel));
   }
@@ -35,7 +36,7 @@ public class ChannelController {
   // 비공개 채널 생성
   @PostMapping("/private")
   public ResponseEntity<ChannelResponse> createPrivateChannel(
-      @RequestBody PrivateChannelCreateRequest request) {
+      @Valid @RequestBody PrivateChannelCreateRequest request) {
     Channel createdChannel = channelService.createPrivateChannel(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(channelMapper.toResponse(createdChannel));
   }
@@ -44,7 +45,7 @@ public class ChannelController {
   @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelResponse> updatePublicChannel(
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request) {
+      @Valid @RequestBody PublicChannelUpdateRequest request) {
     Channel updatedChannel = channelService.update(channelId, request);
     return ResponseEntity.ok(channelMapper.toResponse(updatedChannel));
   }

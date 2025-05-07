@@ -12,6 +12,7 @@ public enum ResultCode implements Code {
   INVALID_JSON(400, "JSON 형식이 잘못되었습니다."),
   READ_STATUS_ALREADY_EXISTS(400, "이미 읽음 상태가 존재합니다."),
   USER_STATUS_ALREADY_EXISTS(400, "이미 사용자 상태가 존재합니다."),
+  INVALID_CHANNEL_DATA(400, "채널명이 입력되지 않았습니다."),
 
   // 404 Not Found
   USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),
