@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +22,16 @@ import java.util.UUID;
 public class ChannelController {
 
   private final ChannelService channelService;
-  private final ChannelMapper channelMapper;
 
   // 공개 채널 생성
   @PostMapping("/public")
   public ResponseEntity<ChannelResponse> createPublicChannel(
       @Valid @RequestBody PublicChannelCreateRequest request) {
+    // 채널 생성
     Channel createdChannel = channelService.createPublicChannel(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(channelMapper.toResponse(createdChannel));
+    // 생성된 채널의 Response 반환
+    ChannelResponse response = channelService.getChannelResponse(createdChannel);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   // 비공개 채널 생성
@@ -38,7 +39,8 @@ public class ChannelController {
   public ResponseEntity<ChannelResponse> createPrivateChannel(
       @Valid @RequestBody PrivateChannelCreateRequest request) {
     Channel createdChannel = channelService.createPrivateChannel(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(channelMapper.toResponse(createdChannel));
+    ChannelResponse response = channelService.getChannelResponse(createdChannel);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   // 공개 채널 정보 수정
@@ -47,7 +49,8 @@ public class ChannelController {
       @PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest request) {
     Channel updatedChannel = channelService.update(channelId, request);
-    return ResponseEntity.ok(channelMapper.toResponse(updatedChannel));
+    ChannelResponse response = channelService.getChannelResponse(updatedChannel);
+    return ResponseEntity.ok(response);
   }
 
   // 채널 삭제
@@ -62,8 +65,9 @@ public class ChannelController {
   public ResponseEntity<List<ChannelResponse>> getChannelsForUser(
       @RequestParam UUID userId) {
     List<Channel> channels = channelService.findAllByUserId(userId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(channels.stream().map(channelMapper::toResponse).toList());
+    List<ChannelResponse> responses = channels.stream()
+        .map(channelService::getChannelResponse)
+        .toList();
+    return ResponseEntity.ok(responses);
   }
 }

@@ -23,6 +23,7 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<UserResponse> login(@RequestBody UserLoginRequest loginRequest) {
     User user = authService.login(loginRequest);
-    return ResponseEntity.ok(userMapper.toResponse(user));
+    // 로그인 시 항상 온라인 상태로 처리
+    return ResponseEntity.ok(userMapper.toResponse(user, true));
   }
 }

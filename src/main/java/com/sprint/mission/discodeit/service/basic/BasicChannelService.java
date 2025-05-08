@@ -1,21 +1,28 @@
 package com.sprint.mission.discodeit.service.basic;
 
 
+import com.sprint.mission.discodeit.common.CodeitConstants;
 import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto2.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.RestException;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +38,8 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
+  private final ChannelMapper channelMapper;
+  private final UserMapper userMapper;
 
   @Override
   @Transactional
@@ -126,4 +135,37 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.deleteByChannelId(id);
     channelRepository.delete(channel);
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public ChannelResponse getChannelResponse(Channel channel) {
+    // 마지막 메시지 시간 조회
+    Instant lastMessageAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(
+            channel.getId())
+        .map(Message::getCreatedAt)
+        .orElse(null);
+
+    // PRIVATE 채널의 참여자 목록 조회
+    List<UserResponse> participants = List.of();
+    if (channel.getType() == ChannelType.PRIVATE) {
+      // 참여자 ID 목록 조회
+      List<UUID> userIds = readStatusRepository.findUsersByChannelId(channel.getId());
+
+      // 참여자 엔티티 일괄 조회 (일괄 조회로 N + 1 이슈 방지)
+      List<User> users = userRepository.findAllById(userIds);
+
+      // 온라인 상태 일괄 조회
+      Instant threshold = Instant.now().minusSeconds(CodeitConstants.ONLINE_THRESHOLD_SECONDS);
+      participants = users.stream()
+          .map(user -> {
+            boolean isOnline =
+                user.getLastActiveAt() != null && user.getLastActiveAt().isAfter(threshold);
+            return userMapper.toResponse(user, isOnline);
+          })
+          .toList();
+    }
+
+    return channelMapper.toResponse(channel, lastMessageAt, participants);
+  }
+
 }

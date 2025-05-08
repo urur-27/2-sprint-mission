@@ -42,4 +42,9 @@ public class UserStatus extends BaseUpdatableEntity {
   public void updateLastAccessedAt(Instant accessedAt) {
     this.lastActiveAt = accessedAt;
   }
+
+  // 온라인으로 상태 변환
+  public void setOnline() {
+    this.lastActiveAt = Instant.now();
+  }
 }
