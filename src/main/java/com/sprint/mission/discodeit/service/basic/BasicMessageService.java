@@ -98,8 +98,16 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(id)
         .orElseThrow(() -> new RestException(ResultCode.MESSAGE_NOT_FOUND));
 
-    // 첨부파일 직접 삭제 (Cascade 설정이 없음). 설정 변경 고민
-    binaryContentRepository.deleteAll(message.getAttachments());
+    List<UUID> attachmentIds = message.getAttachments().stream()
+        .map(BinaryContent::getId)
+        .toList();
+
+    // Chunk 단위로 삭제 (100개씩)
+    int chunkSize = 100;
+    for (int i = 0; i < attachmentIds.size(); i += chunkSize) {
+      List<UUID> chunk = attachmentIds.subList(i, Math.min(i + chunkSize, attachmentIds.size()));
+      binaryContentRepository.deleteInBatch(chunk);
+    }
 
     messageRepository.delete(message);
   }
