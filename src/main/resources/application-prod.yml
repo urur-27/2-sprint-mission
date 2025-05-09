@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: prod
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit_prod
+    username: prod_user
+    password: prod_password
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+server:
+  port: 8081
+logging:
+  level:
+    root: info
+    com.sprint.mission.discodeit: info
