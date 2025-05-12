@@ -20,16 +20,19 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.util.LogUtils;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
@@ -44,6 +47,13 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[CREATE] status=START, participantIds={}, traceId={}",
+        log.isDebugEnabled() ? request.userIds() : LogUtils.maskUUIDList(request.userIds()),
+        traceId);
+
     Channel privateChannel = Channel.builder()
         .type(ChannelType.PRIVATE)
         .name(null)
@@ -53,21 +63,37 @@ public class BasicChannelService implements ChannelService {
 
     List<User> users = request.userIds().stream()
         .map(userId -> userRepository.findById(userId)
-            .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND)))
+            .orElseThrow(() -> {
+              log.warn("[CREATE] User not found for private channel: userId={}, traceId={}",
+                  LogUtils.maskUUID(userId), traceId);
+              return new RestException(ResultCode.USER_NOT_FOUND);
+            }))
         .toList();
 
     users.forEach(user -> {
       ReadStatus readStatus = new ReadStatus(user, privateChannel, privateChannel.getCreatedAt());
       readStatusRepository.save(readStatus);
+      log.info("[CREATE] ReadStatus created for user: userId={}, channelId={}, traceId={}",
+          LogUtils.maskUUID(user.getId()), LogUtils.maskUUID(privateChannel.getId()), traceId);
     });
 
+    // 성공 로그
+    log.info("[CREATE] status=SUCCESS, channelId={}, traceId={}",
+        LogUtils.maskUUID(privateChannel.getId()), traceId);
     return privateChannel;
   }
 
   @Override
   @Transactional
   public Channel createPublicChannel(PublicChannelCreateRequest request) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[CREATE] status=START, channelName={}, traceId={}",
+        log.isDebugEnabled() ? request.name() : LogUtils.mask(request.name()), traceId);
+
     if (request.name().isBlank()) {
+      log.warn("[CREATE] Invalid Public Channel name: traceId={}", traceId);
       throw new RestException(ResultCode.INVALID_CHANNEL_DATA);
     }
 
@@ -77,21 +103,45 @@ public class BasicChannelService implements ChannelService {
         .description(request.description())
         .build();
     channelRepository.save(publicChannel);
+
+    // 성공 로그
+    log.info("[CREATE] status=SUCCESS, channelId={}, traceId={}",
+        LogUtils.maskUUID(publicChannel.getId()), traceId);
     return publicChannel;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Channel findById(UUID id) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[FIND] status=START, channelId={}, traceId={}",
+        log.isDebugEnabled() ? id : LogUtils.maskUUID(id), traceId);
+
     Channel channel = channelRepository.findById(id)
-        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("[FIND] Channel not found: channelId={}, traceId={}",
+              LogUtils.maskUUID(id), traceId);
+          return new RestException(ResultCode.CHANNEL_NOT_FOUND);
+        });
+
+    // 성공 로그
+    log.info("[FIND] status=SUCCESS, channelId={}, traceId={}",
+        LogUtils.maskUUID(id), traceId);
     return channel;
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<Channel> findAllByUserId(UUID userId) {
-    return channelRepository.findAll().stream()
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[FIND_ALL] status=START, userId={}, traceId={}",
+        log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
+
+    List<Channel> channels = channelRepository.findAll().stream()
         .filter(channel -> {
           if (channel.getType() == ChannelType.PRIVATE) {
             List<UUID> userIds = readStatusRepository.findUsersByChannelId(channel.getId());
@@ -100,13 +150,28 @@ public class BasicChannelService implements ChannelService {
           return true; // PUBLIC이면 무조건 포함
         })
         .toList();
+
+    // 성공 로그
+    log.info("[FIND_ALL] status=SUCCESS, userId={}, channelCount={}, traceId={}",
+        LogUtils.maskUUID(userId), channels.size(), traceId);
+    return channels;
   }
 
   @Override
   @Transactional
   public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[UPDATE] status=START, channelId={}, traceId={}",
+        log.isDebugEnabled() ? channelId : LogUtils.maskUUID(channelId), traceId);
+
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("[UPDATE] Channel not found: channelId={}, traceId={}",
+              LogUtils.maskUUID(channelId), traceId);
+          return new RestException(ResultCode.CHANNEL_NOT_FOUND);
+        });
 
     if (channel.getType() == ChannelType.PRIVATE) {
       throw new RestException(ResultCode.INVALID_CHANNEL_TYPE);
@@ -118,12 +183,22 @@ public class BasicChannelService implements ChannelService {
 
     // 변경 감지 방식 적용(Dirty Checking)
     channel.updateChannel(ChannelType.PUBLIC, request.newName(), request.newDescription());
+
+    // 성공 로그
+    log.info("[UPDATE] status=SUCCESS, channelId={}, traceId={}",
+        LogUtils.maskUUID(channelId), traceId);
     return channel;
   }
 
   @Override
   @Transactional
   public void delete(UUID id) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[DELETE] status=START, channelId={}, traceId={}",
+        log.isDebugEnabled() ? id : LogUtils.maskUUID(id), traceId);
+
     Channel channel = channelRepository.findById(id)
         .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
 
@@ -134,11 +209,21 @@ public class BasicChannelService implements ChannelService {
     messageRepository.deleteAll(messages);
     readStatusRepository.deleteByChannelId(id);
     channelRepository.delete(channel);
+
+    // 성공 로그
+    log.info("[DELETE] status=SUCCESS, channelId={}, traceId={}",
+        LogUtils.maskUUID(id), traceId);
   }
 
   @Override
   @Transactional(readOnly = true)
   public ChannelResponse getChannelResponse(Channel channel) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[RESPONSE] status=START, channelId={}, traceId={}",
+        log.isDebugEnabled() ? channel.getId() : LogUtils.maskUUID(channel.getId()), traceId);
+
     // 마지막 메시지 시간 조회
     Instant lastMessageAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(
             channel.getId())
@@ -164,6 +249,10 @@ public class BasicChannelService implements ChannelService {
           })
           .toList();
     }
+
+    // 성공 로그
+    log.info("[RESPONSE] status=SUCCESS, channelId={}, participantCount={}, traceId={}",
+        LogUtils.maskUUID(channel.getId()), participants.size(), traceId);
 
     return channelMapper.toResponse(channel, lastMessageAt, participants);
   }

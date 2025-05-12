@@ -15,9 +15,12 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
+import com.sprint.mission.discodeit.util.LogUtils;
 import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -41,12 +45,19 @@ public class UserController {
   public ResponseEntity<UserResponse> createUser(
       @RequestPart("userCreateRequest") String userCreateRequestJson,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[CREATE] status=START, userCreateRequest={}, traceId={}",
+        log.isDebugEnabled() ? userCreateRequestJson : "***", traceId);
+
     UserCreateRequest userCreateRequest;
     ObjectMapper objectMapper = new ObjectMapper();
 
     try {
       userCreateRequest = objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
     } catch (IOException e) {
+      log.warn("[CREATE] Invalid JSON format for User creation: traceId={}", traceId, e);
       throw new RestException(ResultCode.INVALID_JSON);
     }
 
@@ -55,6 +66,11 @@ public class UserController {
 
     User createdUser = userService.create(userCreateRequest, profileRequest);
     UserResponse response = userService.getUserResponse(createdUser);
+
+    // 성공 로그
+    log.info("[CREATE] status=SUCCESS, userId={}, traceId={}",
+        LogUtils.maskUUID(createdUser.getId()), traceId);
+
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
@@ -66,10 +82,21 @@ public class UserController {
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[UPDATE] status=START, userId={}, traceId={}",
+        log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
+
     Optional<BinaryContentCreateRequest> profileRequest =
         binaryContentService.resolveProfileRequest(profile);
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     UserResponse response = userService.getUserResponse(updatedUser);
+
+    // 성공 로그
+    log.info("[UPDATE] status=SUCCESS, userId={}, traceId={}",
+        LogUtils.maskUUID(userId), traceId);
+
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);
@@ -78,7 +105,18 @@ public class UserController {
   // User 삭제
   @DeleteMapping("/{userId}")
   public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[DELETE] status=START, userId={}, traceId={}",
+        log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
+
     userService.delete(userId);
+
+    // 성공 로그
+    log.info("[DELETE] status=SUCCESS, userId={}, traceId={}",
+        LogUtils.maskUUID(userId), traceId);
+
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
@@ -87,10 +125,20 @@ public class UserController {
   // 모든 유저 조회
   @GetMapping
   public ResponseEntity<List<UserResponse>> getUsers() {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[FIND_ALL] status=START, traceId={}", traceId);
+
     List<User> users = userService.findAll();
     List<UserResponse> responses = users.stream()
         .map(userService::getUserResponse)
         .toList();
+
+    // 성공 로그
+    log.info("[FIND_ALL] status=SUCCESS, userCount={}, traceId={}",
+        responses.size(), traceId);
+
     return ResponseEntity.ok(responses);
   }
 
@@ -98,10 +146,21 @@ public class UserController {
   @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatusResponse> updateUserStatus(@PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
+    String traceId = MDC.get("traceId");
+
+    // 시작 로그
+    log.info("[UPDATE_STATUS] status=START, userId={}, traceId={}",
+        log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
+
     UserStatus updatedUserStatus = userStatusService.update(userId, request);
+    UserStatusResponse response = userStatusMapper.toResponse(updatedUserStatus);
+
+    log.info("[UPDATE_STATUS] User status updated successfully: userId={}, traceId={}",
+        LogUtils.maskUUID(userId), traceId);
+
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(userStatusMapper.toResponse(updatedUserStatus));
+        .body(response);
   }
 
 }
