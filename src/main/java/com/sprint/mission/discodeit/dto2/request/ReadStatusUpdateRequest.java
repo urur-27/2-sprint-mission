@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.dto2.request;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.UUID;
 
 public record ReadStatusUpdateRequest(
+    @NotNull(message = "New last read timestamp is required.")
     Instant newLastReadAt
 ) {
 

@@ -4,10 +4,14 @@ import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.dto2.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -19,7 +23,6 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleRestException(RestException e,
       HttpServletRequest request) {
     ResultCode resultCode = e.getResultCode();
-//    String traceId = request.getHeader("traceId");
     String traceId = MDC.get("traceId");
 
     // 예외 로그 출력 (개인정보 제외)
@@ -38,7 +41,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception e,
       HttpServletRequest request) {
-//    String traceId = request.getHeader("traceId");
     String traceId = MDC.get("traceId");
 
     // 예외 로그 출력 (StackTrace 포함)
@@ -51,5 +53,27 @@ public class GlobalExceptionHandler {
     );
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationExceptions(
+      MethodArgumentNotValidException ex, HttpServletRequest request) {
+    String traceId = MDC.get("traceId");
+
+    // 필드별 오류 메시지 조합
+    String message = ex.getBindingResult().getFieldErrors().stream()
+        .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        .collect(Collectors.joining(", "));
+
+    // 예외 로그 출력 (개인정보 제외)
+    log.warn("Validation failed: traceId={}, errors={}", traceId, message);
+
+    ErrorResponse errorResponse = new ErrorResponse(
+        HttpStatus.BAD_REQUEST,
+        message,
+        request.getRequestURI()
+    );
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 }

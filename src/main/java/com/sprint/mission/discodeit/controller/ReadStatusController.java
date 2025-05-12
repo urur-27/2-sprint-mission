@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto2.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.util.LogUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -26,7 +27,7 @@ public class ReadStatusController {
   // 1. 특정 채널의 메시지 수신 정보 생성
   @PostMapping
   public ResponseEntity<ReadStatus> createReceipts(
-      @RequestBody ReadStatusCreateRequest request) {
+      @Valid @RequestBody ReadStatusCreateRequest request) {
     String traceId = MDC.get("traceId");
     UUID userId = request.userId();
     UUID channelId = request.channelId();
@@ -50,7 +51,7 @@ public class ReadStatusController {
   @PatchMapping("/{readStatusId}")
   public ResponseEntity<ReadStatus> updateReceipts(
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest request) {
+      @Valid @RequestBody ReadStatusUpdateRequest request) {
     String traceId = MDC.get("traceId");
 
     // 시작 로그

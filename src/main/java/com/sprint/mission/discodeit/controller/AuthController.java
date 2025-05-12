@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.util.LogUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -26,7 +27,7 @@ public class AuthController {
 
 
   @PostMapping("/login")
-  public ResponseEntity<UserResponse> login(@RequestBody UserLoginRequest loginRequest) {
+  public ResponseEntity<UserResponse> login(@Valid @RequestBody UserLoginRequest loginRequest) {
     String traceId = MDC.get("traceId");
 
     // 시작 로그

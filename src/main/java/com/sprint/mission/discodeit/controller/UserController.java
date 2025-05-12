@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import com.sprint.mission.discodeit.util.LogUtils;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class UserController {
   // User 등록
   @PostMapping(consumes = "multipart/form-data")
   public ResponseEntity<UserResponse> createUser(
-      @RequestPart("userCreateRequest") String userCreateRequestJson,
+      @Valid @RequestPart("userCreateRequest") String userCreateRequestJson,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     String traceId = MDC.get("traceId");
 
@@ -80,7 +81,7 @@ public class UserController {
   @PatchMapping(value = "/{userId}", consumes = "multipart/form-data")
   public ResponseEntity<UserResponse> updateUser(
       @PathVariable UUID userId,
-      @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+      @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     String traceId = MDC.get("traceId");
 
@@ -145,7 +146,7 @@ public class UserController {
   // 온라인 상태 갱신
   @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatusResponse> updateUserStatus(@PathVariable UUID userId,
-      @RequestBody UserStatusUpdateRequest request) {
+      @Valid @RequestBody UserStatusUpdateRequest request) {
     String traceId = MDC.get("traceId");
 
     // 시작 로그

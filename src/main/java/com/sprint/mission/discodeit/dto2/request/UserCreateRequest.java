@@ -2,14 +2,20 @@ package com.sprint.mission.discodeit.dto2.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record UserCreateRequest(
-//    @NotBlank(message = "아이디는 필수입니다.")
+    @NotBlank(message = "Username is required.")
+    @Size(max = 50, message = "Username must be at most 50 characters.")
     String username,
-//    @NotBlank(message = "이메일은 필수입니다.")
-//    @Email(message = "이메일 형식이 올바르지 않습니다.")
+
+    @NotBlank(message = "Email is required.")
+    @Email(message = "Invalid email format.")
+    @Size(max = 100, message = "Email must be at most 100 characters.")
     String email,
-//    @NotBlank(message = "비밀번호는 필수입니다.")
+
+    @NotBlank(message = "Password is required.")
+    @Size(min = 8, max = 60, message = "Password must be between 8 and 60 characters.")
     String password
 ) {
 

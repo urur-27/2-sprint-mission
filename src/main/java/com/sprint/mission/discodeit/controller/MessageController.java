@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.LogUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -38,7 +39,7 @@ public class MessageController {
   // 메시지 보내기
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageResponse> sendMessage(
-      @RequestPart MessageCreateRequest messageCreateRequest,
+      @Valid @RequestPart MessageCreateRequest messageCreateRequest,
       @RequestPart(required = false) List<MultipartFile> attachments) {
     String traceId = MDC.get("traceId");
 
@@ -65,7 +66,7 @@ public class MessageController {
   @PatchMapping("/{messageId}")
   public ResponseEntity<MessageResponse> updateMessage(
       @PathVariable UUID messageId,
-      @RequestBody MessageUpdateRequest messageUpdateRequest) {
+      @Valid @RequestBody MessageUpdateRequest messageUpdateRequest) {
     String traceId = MDC.get("traceId");
 
     // 시작 로그
