@@ -1,7 +1,6 @@
 spring:
-  profiles:
-    active: prod
   datasource:
+    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/discodeit_prod
     username: prod_user
     password: prod_password
@@ -9,8 +8,10 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+
 server:
-  port: 8081
+  port: 8082
+
 logging:
   level:
     root: info
