@@ -9,16 +9,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.util.UUID;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "read_statuses", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"userId", "channelId"})
+    @UniqueConstraint(columnNames = {"channelId", "userId"})
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // 사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현하는 도메인 모델
@@ -38,6 +38,7 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
 
+  @Builder
   public ReadStatus(User user, Channel channel, Instant lastReadAt) {
     this.user = user;
     this.channel = channel;

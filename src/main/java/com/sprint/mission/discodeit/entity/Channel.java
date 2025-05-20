@@ -6,9 +6,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
-import java.time.Instant;
 import lombok.NoArgsConstructor;
 
 @Getter
@@ -26,6 +26,7 @@ public class Channel extends BaseUpdatableEntity {
   @Column(length = 500)
   private String description;
 
+  @Builder
   public Channel(ChannelType type, String name, String description) {
     this.type = type;
     this.name = name;

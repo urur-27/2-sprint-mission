@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class Message extends BaseUpdatableEntity {
   )
   private List<BinaryContent> attachments = new ArrayList<>();
 
+  @Builder
   public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
     this.content = content;
     this.channel = channel;

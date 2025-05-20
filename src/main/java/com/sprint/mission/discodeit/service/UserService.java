@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 
+import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +24,6 @@ public interface UserService {
       Optional<BinaryContentCreateRequest> profileCreateRequest);  // User 정보 수정 (선택적 프로필 이미지 변경)
 
   void delete(UUID id);  // User 삭제 (BinaryContent, UserStatus 같이 삭제)
+
+  UserResponse getUserResponse(User user);
 }

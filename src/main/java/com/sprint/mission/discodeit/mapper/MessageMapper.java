@@ -20,7 +20,8 @@ public class MessageMapper {
   public MessageResponse toResponse(Message message) {
     // 작성자 정보 구성
     User user = message.getAuthor();
-    UserResponse author = userMapper.toResponse(user);
+    //
+    UserResponse author = userMapper.toResponse(user, false);
 
     // 첨부 파일 변환
     List<BinaryContentResponse> attachments = message.getAttachments().stream()

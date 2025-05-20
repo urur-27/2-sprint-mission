@@ -7,7 +7,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 
 import jakarta.persistence.Entity;
@@ -38,6 +40,7 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
+  @Builder
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
@@ -51,5 +54,10 @@ public class User extends BaseUpdatableEntity {
     this.email = email;
     this.password = password;
     this.profile = profile;
+  }
+
+  // 마지막 활동 시간 반환 메서드
+  public Instant getLastActiveAt() {
+    return status != null ? status.getLastActiveAt() : null;
   }
 }
