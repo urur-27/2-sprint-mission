@@ -1,16 +1,19 @@
 package com.sprint.mission.discodeit;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableJpaAuditing
-@EntityScan(basePackages = "com.sprint.mission.discodeit.entity")
 public class DiscodeitApplication {
-
   public static void main(String[] args) {
+    Dotenv dotenv = Dotenv.load();
+
+    // 환경 변수 등록
+    dotenv.entries().forEach(entry ->
+        System.setProperty(entry.getKey(), entry.getValue())
+    );
+
     SpringApplication.run(DiscodeitApplication.class, args);
   }
 }
