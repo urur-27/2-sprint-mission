@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("integration")
 public class S3BinaryContentStorageTest {
 
   private static S3BinaryContentStorage storage;
@@ -22,6 +24,13 @@ public class S3BinaryContentStorageTest {
   @BeforeAll
   static void setUp() {
     Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+    // 시스템 속성으로도 등록 (CI에서 .env 없이도 동작하도록)
+    dotenv.entries().forEach(entry -> {
+      if (System.getProperty(entry.getKey()) == null) {
+        System.setProperty(entry.getKey(), entry.getValue());
+      }
+    });
 
     String accessKey = dotenv.get("AWS_S3_ACCESS_KEY");
     String secretKey = dotenv.get("AWS_S3_SECRET_KEY");

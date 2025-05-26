@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.storage.s3;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.time.Duration;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Tag;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -18,6 +19,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AWSS3Test {
 
@@ -31,6 +33,13 @@ public class AWSS3Test {
     dotenv = Dotenv.configure()
         .ignoreIfMissing()  // 없으면 넘어가도록
         .load();
+
+    // 시스템 속성으로도 등록 (CI에서 .env 없이도 동작하도록)
+    dotenv.entries().forEach(entry -> {
+      if (System.getProperty(entry.getKey()) == null) {
+        System.setProperty(entry.getKey(), entry.getValue());
+      }
+    });
 
     s3 = S3Client.builder()
         .region(Region.of(dotenv.get("AWS_S3_REGION")))
