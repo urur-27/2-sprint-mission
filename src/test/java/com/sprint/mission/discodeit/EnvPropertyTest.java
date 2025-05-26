@@ -7,9 +7,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 // 환경변수 적용이 정상적으로 되었는지 테스트
 @SpringBootTest
+@ActiveProfiles("test")
 public class EnvPropertyTest {
   static {
     // 테스트 실행 전에 .env를 수동으로 읽어 시스템에 주입

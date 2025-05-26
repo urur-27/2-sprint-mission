@@ -28,7 +28,9 @@ public class AWSS3Test {
 
   @BeforeAll
   static void setup() {
-    dotenv = Dotenv.load();
+    dotenv = Dotenv.configure()
+        .ignoreIfMissing()  // 없으면 넘어가도록
+        .load();
 
     s3 = S3Client.builder()
         .region(Region.of(dotenv.get("AWS_S3_REGION")))
