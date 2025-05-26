@@ -68,9 +68,12 @@ jacocoTestReport {
 def envFile = new File(".env")
 if (envFile.exists()) {
     envFile.eachLine { line ->
-        def (key, value) = line.split("=")
-        if (!System.getenv(key)) {
-            System.setProperty(key.trim(), value.trim())
+        line = line.trim()
+        if (line && !line.startsWith("#") && line.contains("=")) {
+            def (key, value) = line.split("=", 2)
+            if (!System.getenv(key)) {
+                System.setProperty(key.trim(), value.trim())
+            }
         }
     }
 }
