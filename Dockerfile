@@ -24,7 +24,7 @@ VOLUME /tmp
 # 환경 변수 설정 (런타임용)
 ENV PROJECT_NAME=discodeit \
     PROJECT_VERSION=1.2-M8 \
-    JVM_OPTS=""
+    JVM_OPTS="-Xms128m -Xmx256m"
 
 # 빌드 결과 복사 (정적 경로 사용)
 COPY --from=build /app/build/libs/discodeit-1.2-M8.jar /app/discodeit-1.2-M8.jar
