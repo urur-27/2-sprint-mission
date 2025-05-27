@@ -49,7 +49,7 @@ jobs:
         run: |
           aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} > task-def.json
           sed -i "s|image\": \".*\"|image\": \"${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }}\"|" task-def.json
-          echo '{"family":"${{ vars.ECS_TASK_DEFINITION }}","containerDefinitions":'$(jq '.taskDefinition.containerDefinitions' task-def.json)'}' > new-task-def.json
+          echo '{"family":"${{ vars.ECS_TASK_DEFINITION }}","executionRoleArn":"${{ vars.ECS_TASK_EXECUTION_ROLE_ARN }}","containerDefinitions":'$(jq '.taskDefinition.containerDefinitions' task-def.json)'}' > new-task-def.json
           aws ecs register-task-definition --cli-input-json file://new-task-def.json > output.json
           echo "::set-output name=taskDefArn::$(jq -r '.taskDefinition.taskDefinitionArn' output.json)"
 
