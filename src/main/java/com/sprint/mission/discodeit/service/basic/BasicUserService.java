@@ -21,6 +21,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -38,6 +39,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -61,10 +63,13 @@ public class BasicUserService implements UserService {
         .map(this::saveBinaryContent)
         .orElse(null);
 
+    // 패스워드 인코딩
+    String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+
     User newUser = User.builder()
         .username(userCreateRequest.username())
         .email(userCreateRequest.email())
-        .password(userCreateRequest.password())
+        .password(encodedPassword)
         .profile(newProfile)
         .build();
 
