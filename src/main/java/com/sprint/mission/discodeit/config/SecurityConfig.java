@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -85,7 +86,7 @@ public class SecurityConfig {
                 .csrfTokenRepository(csrfTokenRepository())
                 .ignoringRequestMatchers(
                     "/api/auth/login",
-                    "/api/users",
+                    "/api/users", // 회원가입
                     "/api/auth/csrf-token",
                     "/api/auth/logout"
                 )
@@ -96,6 +97,20 @@ public class SecurityConfig {
                     "/api/auth/csrf-token",
                     "/api/users"
                 ).permitAll()
+
+                // 사용자 권한 수정은 ROLE_ADMIN만
+                .requestMatchers("/api/auth/role")
+                .hasRole("ADMIN")
+
+                // 퍼블릭 채널 관리는 ROLE_CHANNEL_MANAGER부터
+                .requestMatchers(HttpMethod.POST, "/api/channels/public")
+                .hasRole("CHANNEL_MANAGER")
+                // 퍼블릭 채널 수정
+                .requestMatchers(HttpMethod.PATCH, "/api/channels/*")
+                .hasRole("CHANNEL_MANAGER")
+                // 퍼블릭 채널 삭제(경로를 프라이빗 채널과 공유하고 있어서 서비스 내부에서 isPublic 여부에 따라 체크)
+                .requestMatchers(HttpMethod.DELETE, "/api/channels/*")
+                .hasRole("CHANNEL_MANAGER")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

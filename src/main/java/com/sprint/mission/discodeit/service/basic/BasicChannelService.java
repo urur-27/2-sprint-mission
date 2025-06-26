@@ -20,12 +20,15 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.CustomUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.util.LogUtils;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -201,6 +204,13 @@ public class BasicChannelService implements ChannelService {
 
     Channel channel = channelRepository.findById(id)
         .orElseThrow(() -> new RestException(ResultCode.CHANNEL_NOT_FOUND));
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+    if (channel.getType() == ChannelType.PUBLIC && !userDetails.hasRole("CHANNEL_MANAGER")) {
+      throw new RestException(ResultCode.ACCESS_DENIED);
+    }
 
     // 관련 도메인 같이 삭제
     List<Message> messages = messageRepository.findByChannelId(id);

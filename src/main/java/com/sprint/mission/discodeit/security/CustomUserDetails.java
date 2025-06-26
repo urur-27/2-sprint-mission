@@ -31,6 +31,10 @@ public class CustomUserDetails implements UserDetails {
         return user.getId();
     }
 
+    public boolean hasRole(String roleName) {
+        return user.getRole().name().equals("ROLE_" + roleName);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(); // 필요하면 ROLE 추가
@@ -38,17 +42,17 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // 실제 도메인에 따라 변경 가능
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // 실제 도메인에 따라 변경 가능
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // 실제 도메인에 따라 변경 가능
+        return true;
     }
 
     @Override
