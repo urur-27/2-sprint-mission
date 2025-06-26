@@ -73,6 +73,8 @@ public class BasicUserService implements UserService {
         .profile(newProfile)
         .build();
 
+    userRepository.save(newUser);
+
     userStatusRepository.save(new UserStatus(newUser, Instant.now()));
 
     // 성공 로그
