@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -57,6 +59,15 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/api/auth/login");
         return loginFilter;
     }
+
+    // 권한 계층 설정
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER \nROLE_CHANNEL_MANAGER > ROLE_USER");
+        return hierarchy;
+    }
+
 
     /**
      * Spring Security 필터 체인 설정

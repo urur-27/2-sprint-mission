@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -33,6 +35,11 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false)
   private String password;
 
+  // 권한
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
+
   @ManyToOne
   @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "fk_users_profile"))
   private BinaryContent profile;
@@ -41,11 +48,12 @@ public class User extends BaseUpdatableEntity {
   private UserStatus status;
 
   @Builder
-  public User(String username, String email, String password, BinaryContent profile) {
+  public User(String username, String email, String password, BinaryContent profile, Role role) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.profile = profile;
+    this.role = role;
   }
 
   // 업데이트 메서드

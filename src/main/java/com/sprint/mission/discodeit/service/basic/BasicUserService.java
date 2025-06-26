@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.CodeitConstants;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
@@ -71,6 +72,7 @@ public class BasicUserService implements UserService {
         .email(userCreateRequest.email())
         .password(encodedPassword)
         .profile(newProfile)
+        .role(Role.ROLE_USER)
         .build();
 
     userRepository.save(newUser);
