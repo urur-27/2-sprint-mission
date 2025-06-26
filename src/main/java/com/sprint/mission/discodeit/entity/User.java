@@ -68,4 +68,8 @@ public class User extends BaseUpdatableEntity {
   public Instant getLastActiveAt() {
     return status != null ? status.getLastActiveAt() : null;
   }
+
+  public void setRole(Role role) {
+    this.role = role;
+  }
 }
