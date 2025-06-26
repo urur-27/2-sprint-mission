@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.security.JsonLogoutFilter;
 import com.sprint.mission.discodeit.security.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
@@ -29,20 +30,24 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper;
     private final UserDetailsService userDetailsService;
-    private final UserMapper userMapper;
 
-    /**
-     * Spring Security 필터 체인 설정
-     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public JsonLogoutFilter jsonLogoutFilter() {
+        return new JsonLogoutFilter();
+    }
+
+    @Bean
+    public JsonUsernamePasswordAuthenticationFilter jsonLoginFilter(
+        ObjectMapper objectMapper,
+        UserMapper userMapper,
+        AuthenticationManager authenticationManager
+    ) {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
             new JsonUsernamePasswordAuthenticationFilter(objectMapper);
         // 인증을 위임할 매니저 생성
-        loginFilter.setAuthenticationManager(authenticationManager());
+        loginFilter.setAuthenticationManager(authenticationManager);
         // 인증 성공시 SecurityContext를 저장할 장소 지정
         loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         // 인증 성공/실패 핸들러 지정
@@ -50,7 +55,17 @@ public class SecurityConfig {
         loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
         // 필터 처리 경로 설정
         loginFilter.setFilterProcessesUrl("/api/auth/login");
+        return loginFilter;
+    }
 
+    /**
+     * Spring Security 필터 체인 설정
+     */
+    @Bean
+    public SecurityFilterChain filterChain(
+        HttpSecurity http,
+        JsonLogoutFilter logoutFilter,
+        JsonUsernamePasswordAuthenticationFilter loginFilter) throws Exception {
 
         http
             .csrf(csrf -> csrf
@@ -58,7 +73,8 @@ public class SecurityConfig {
                 .ignoringRequestMatchers(
                     "/api/auth/login",
                     "/api/users",
-                    "/api/auth/csrf-token"
+                    "/api/auth/csrf-token",
+                    "/api/auth/logout"
                 )
             )
             .authorizeHttpRequests(auth -> auth
@@ -73,7 +89,8 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
-            .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(logoutFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
