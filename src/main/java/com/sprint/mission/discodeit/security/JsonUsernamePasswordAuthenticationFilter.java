@@ -2,9 +2,6 @@ package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

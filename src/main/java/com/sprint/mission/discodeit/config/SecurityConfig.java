@@ -40,7 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
-            new JsonUsernamePasswordAuthenticationFilter(objectMapper, userMapper);
+            new JsonUsernamePasswordAuthenticationFilter(objectMapper);
         // 인증을 위임할 매니저 생성
         loginFilter.setAuthenticationManager(authenticationManager());
         // 인증 성공시 SecurityContext를 저장할 장소 지정
