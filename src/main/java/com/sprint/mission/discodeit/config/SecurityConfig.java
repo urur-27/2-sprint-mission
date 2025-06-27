@@ -27,6 +27,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Slf4j
@@ -46,7 +47,8 @@ public class SecurityConfig {
     public JsonUsernamePasswordAuthenticationFilter jsonLoginFilter(
         ObjectMapper objectMapper,
         UserMapper userMapper,
-        AuthenticationManager authenticationManager
+        AuthenticationManager authenticationManager,
+        CsrfTokenRepository csrfTokenRepository
     ) {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
@@ -56,7 +58,7 @@ public class SecurityConfig {
         // 인증 성공시 SecurityContext를 저장할 장소 지정
         loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         // 인증 성공/실패 핸들러 지정
-        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(objectMapper, userMapper));
+        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(objectMapper, userMapper, csrfTokenRepository));
         loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
         // 필터 처리 경로 설정
         loginFilter.setFilterProcessesUrl("/api/auth/login");
@@ -82,6 +84,9 @@ public class SecurityConfig {
         JsonUsernamePasswordAuthenticationFilter loginFilter) throws Exception {
 
         http
+            .securityContext(context -> context
+                .securityContextRepository(new HttpSessionSecurityContextRepository())
+            )
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
                 .ignoringRequestMatchers(
@@ -122,7 +127,8 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(logoutFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(logoutFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new CustomCsrfDebugFilter(), CsrfFilter.class);
 
         return http.build();
     }
@@ -132,7 +138,7 @@ public class SecurityConfig {
     public CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookieName("CSRF-TOKEN");
-        repository.setHeaderName("X-CSRF-TOKEN");
+        repository.setHeaderName("X-Csrf-Token");
         return repository;
     }
 
@@ -157,3 +163,5 @@ public class SecurityConfig {
     }
 
 }
+
+

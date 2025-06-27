@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -30,6 +31,17 @@ public class JsonLogoutFilter extends OncePerRequestFilter {
             session.invalidate(); // 세션 무효화
             log.info("Session invalidated for logout");
         }
+
+        // CSRF 및 JSESSIONID 쿠키 삭제
+        Cookie csrfCookie = new Cookie("CSRF-TOKEN", "");
+        csrfCookie.setMaxAge(0);
+        csrfCookie.setPath("/");
+        response.addCookie(csrfCookie);
+
+        Cookie sessionCookie = new Cookie("JSESSIONID", "");
+        sessionCookie.setMaxAge(0);
+        sessionCookie.setPath("/");
+        response.addCookie(sessionCookie);
 
         SecurityContextHolder.clearContext(); // SecurityContext 초기화
         log.info("SecurityContext cleared for logout");
