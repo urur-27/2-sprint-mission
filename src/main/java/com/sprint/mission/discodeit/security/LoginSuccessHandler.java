@@ -17,12 +17,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final UserMapper userMapper;
+    private final CsrfTokenRepository csrfTokenRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -43,6 +47,10 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         User user = userDetails.getUser(); // 실제 엔티티 꺼내기
 
         UserResponse userResponse = userMapper.toResponse(user, true);
+
+        // 새로운 CSRF 토큰 강제로 생성 및 쿠키에 반영
+        CsrfToken newToken = csrfTokenRepository.generateToken(request);
+        csrfTokenRepository.saveToken(newToken, request, response);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
