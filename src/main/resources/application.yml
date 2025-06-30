@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # or update / none
+      ddl-auto: update # or update / none
     show-sql: true       # 콘솔에 SQL 출력
     properties:
       format_sql: true # SQL 예쁘게 출력

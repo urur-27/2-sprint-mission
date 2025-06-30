@@ -29,6 +29,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Slf4j
 @Configuration
@@ -81,14 +82,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
         HttpSecurity http,
         JsonLogoutFilter logoutFilter,
-        JsonUsernamePasswordAuthenticationFilter loginFilter) throws Exception {
-
+        JsonUsernamePasswordAuthenticationFilter loginFilter,
+        CustomCsrfDebugFilter csrfDebugFilter) throws Exception {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName("_csrf");
         http
             .securityContext(context -> context
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
             )
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
+                    .csrfTokenRequestHandler(handler)
                 .ignoringRequestMatchers(
                     "/api/auth/login",
                     "/api/users", // 회원가입
@@ -128,7 +132,7 @@ public class SecurityConfig {
             .logout(AbstractHttpConfigurer::disable)
             .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(logoutFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new CustomCsrfDebugFilter(), CsrfFilter.class);
+            .addFilterBefore(csrfDebugFilter, CsrfFilter.class);
 
         return http.build();
     }
@@ -137,6 +141,7 @@ public class SecurityConfig {
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
         repository.setCookieName("CSRF-TOKEN");
         repository.setHeaderName("X-Csrf-Token");
         return repository;
@@ -162,6 +167,11 @@ public class SecurityConfig {
         return new SessionRegistryImpl();
     }
 
+
+    @Bean
+    public CustomCsrfDebugFilter customCsrfDebugFilter(CsrfTokenRepository csrfTokenRepository) {
+        return new CustomCsrfDebugFilter(csrfTokenRepository);
+    }
 }
 
 
