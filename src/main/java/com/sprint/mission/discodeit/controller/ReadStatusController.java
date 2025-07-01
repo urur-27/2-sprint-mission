@@ -47,8 +47,6 @@ public class ReadStatusController {
     log.info("[CREATE] status=SUCCESS, readStatusId={}, traceId={}",
         LogUtils.maskUUID(readStatus.getId()), traceId);
 
-
-//    return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
     return ResponseEntity.status(HttpStatus.CREATED).body(readStatusMapper.toResponse(readStatus));
   }
 
@@ -69,7 +67,6 @@ public class ReadStatusController {
     log.info("[UPDATE] status=SUCCESS, readStatusId={}, traceId={}",
         LogUtils.maskUUID(updated.getId()), traceId);
 
-//    return ResponseEntity.ok(updated);
     return ResponseEntity.ok(readStatusMapper.toResponse(updated));
   }
 
@@ -92,7 +89,6 @@ public class ReadStatusController {
     log.info("[FIND_ALL] status=SUCCESS, userId={}, readStatusCount={}, traceId={}",
         LogUtils.maskUUID(userId), readStatuses.size(), traceId);
 
-//    return ResponseEntity.ok(readStatuses);
     return ResponseEntity.ok(responses);
   }
 }

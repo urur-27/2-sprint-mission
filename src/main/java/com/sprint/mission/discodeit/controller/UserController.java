@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -72,6 +73,7 @@ public class UserController {
 
   // User 수정
   @PatchMapping(value = "/{userId}", consumes = "multipart/form-data")
+  @PreAuthorize("#userId == authentication.principal.id or hasRole('ROLE_ADMIN')")
   public ResponseEntity<UserResponse> updateUser(
       @PathVariable UUID userId,
       @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
@@ -98,6 +100,7 @@ public class UserController {
 
   // User 삭제
   @DeleteMapping("/{userId}")
+  @PreAuthorize("#userId == authentication.principal.id or hasRole('ROLE_ADMIN')")
   public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
     String traceId = MDC.get("traceId");
 

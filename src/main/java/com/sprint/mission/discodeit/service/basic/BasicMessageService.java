@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto2.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.mapper.MultipartFileMapper;
@@ -15,6 +16,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.util.AuthUtils;
 import com.sprint.mission.discodeit.util.LogUtils;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -165,6 +167,12 @@ public class BasicMessageService implements MessageService {
     // Dirty checking
     message.updateMessage(request.newContent());
 
+    User currentUser = AuthUtils.getCurrentUser();
+    // 본인의 메시지만 수정 가능
+    if (!message.getAuthor().getId().equals(currentUser.getId())) {
+      throw new RestException(ResultCode.ACCESS_DENIED);
+    }
+
     // 성공 로그
     log.info("[UPDATE] status=SUCCESS, messageId={}, traceId={}",
         LogUtils.maskUUID(messageId), traceId);
@@ -186,6 +194,16 @@ public class BasicMessageService implements MessageService {
               LogUtils.maskUUID(id), traceId);
           return new RestException(ResultCode.MESSAGE_NOT_FOUND);
         });
+
+    // 메세지를 작성한 사람 또는 ROLE_ADMIN 권한을 가진 사용자만 호출할 수 있도록
+    User currentUser = AuthUtils.getCurrentUser();
+    boolean isOwner = message.getAuthor().getId().equals(currentUser.getId());
+    boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
+    if (!(isOwner || isAdmin)) {
+      throw new RestException(ResultCode.ACCESS_DENIED);
+    }
+
+
 
     List<UUID> attachmentIds = message.getAttachments().stream()
         .map(BinaryContent::getId)

@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.util.AuthUtils;
 import com.sprint.mission.discodeit.util.LogUtils;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,12 @@ public class BasicReadStatusService implements ReadStatusService {
         log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId),
         log.isDebugEnabled() ? channelId : LogUtils.maskUUID(channelId),
         traceId);
+
+    // 본인만 가능
+    User currentUser = AuthUtils.getCurrentUser();
+    if (!currentUser.getId().equals(userId)) {
+        throw new RestException(ResultCode.ACCESS_DENIED);
+    }
 
     // 관련된 User와 Channel이 존재하는지 확인
     User user = userRepository.findById(userId)
@@ -132,6 +139,12 @@ public class BasicReadStatusService implements ReadStatusService {
               LogUtils.maskUUID(readStatusId), traceId);
           return new RestException(ResultCode.READ_STATUS_NOT_FOUND);
         });
+
+    // 본인만 수정가능
+    User currentUser = AuthUtils.getCurrentUser();
+    if (!currentUser.getId().equals(readStatus.getUser().getId())) {
+        throw new RestException(ResultCode.ACCESS_DENIED);
+    }
 
     readStatus.updateReadStatus(newLastReadAt);
 
