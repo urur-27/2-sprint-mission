@@ -2,10 +2,12 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.security.CustomCsrfDebugFilter;
 import com.sprint.mission.discodeit.security.JsonLogoutFilter;
 import com.sprint.mission.discodeit.security.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;
@@ -24,10 +26,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -40,8 +46,8 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public JsonLogoutFilter jsonLogoutFilter() {
-        return new JsonLogoutFilter();
+    public JsonLogoutFilter jsonLogoutFilter(PersistentTokenBasedRememberMeServices rememberMeServices) {
+        return new JsonLogoutFilter(rememberMeServices);
     }
 
     @Bean
@@ -49,13 +55,16 @@ public class SecurityConfig {
         ObjectMapper objectMapper,
         UserMapper userMapper,
         AuthenticationManager authenticationManager,
-        CsrfTokenRepository csrfTokenRepository
+        CsrfTokenRepository csrfTokenRepository,
+        RememberMeServices rememberMeServices
     ) {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
             new JsonUsernamePasswordAuthenticationFilter(objectMapper);
         // 인증을 위임할 매니저 생성
         loginFilter.setAuthenticationManager(authenticationManager);
+        // RememberMeService 지정
+        loginFilter.setRememberMeServices(rememberMeServices);
         // 인증 성공시 SecurityContext를 저장할 장소 지정
         loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         // 인증 성공/실패 핸들러 지정
@@ -83,9 +92,13 @@ public class SecurityConfig {
         HttpSecurity http,
         JsonLogoutFilter logoutFilter,
         JsonUsernamePasswordAuthenticationFilter loginFilter,
-        CustomCsrfDebugFilter csrfDebugFilter) throws Exception {
+        RememberMeAuthenticationFilter rememberMeAuthenticationFilter,
+        PersistentTokenBasedRememberMeServices rememberMeServices
+    ) throws Exception {
+
         CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
         handler.setCsrfRequestAttributeName("_csrf");
+
         http
             .securityContext(context -> context
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
@@ -127,12 +140,16 @@ public class SecurityConfig {
                 .maximumSessions(1) // 최대 세션 1개로 고정. 세션 추적 간편화
                 .sessionRegistry(sessionRegistry())
             )
+            .rememberMe(rememberMe -> rememberMe
+                .rememberMeServices(rememberMeServices)
+            )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
+            // login -> remember-me -> logout
             .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(logoutFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(csrfDebugFilter, CsrfFilter.class);
+            .addFilterAfter(rememberMeAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(logoutFilter, RememberMeAuthenticationFilter.class);
 
         return http.build();
     }
@@ -172,6 +189,44 @@ public class SecurityConfig {
     public CustomCsrfDebugFilter customCsrfDebugFilter(CsrfTokenRepository csrfTokenRepository) {
         return new CustomCsrfDebugFilter(csrfTokenRepository);
     }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        // 테이블 자동 생성(첫 실행 시 활성화) -> 실제 배포에서는 테이블 수동 설정
+//        tokenRepository.setCreateTableOnStartup(true);
+        return tokenRepository;
+    }
+
+    // 커스텀 필터 내부에서 PersistentTokenBasedRememberMeServices를 사용하기 위한 Bean 등록
+    @Bean
+    public PersistentTokenBasedRememberMeServices rememberMeServices(
+        PersistentTokenRepository tokenRepository,
+        UserDetailsService userDetailsService
+    ) {
+        PersistentTokenBasedRememberMeServices services =
+            new PersistentTokenBasedRememberMeServices(
+                "remember-me", // key
+                userDetailsService,
+                tokenRepository
+            );
+        services.setCookieName("remember-me-cookie");
+        services.setParameter("remember-me");
+        services.setTokenValiditySeconds(60 * 60 * 24 * 21); // 21일
+        return services;
+    }
+
+
+    @Bean
+    public RememberMeAuthenticationFilter rememberMeAuthenticationFilter(
+        AuthenticationManager authenticationManager,
+        RememberMeServices rememberMeServices
+    ) {
+        return new RememberMeAuthenticationFilter(authenticationManager, rememberMeServices);
+    }
+
+
 }
 
 

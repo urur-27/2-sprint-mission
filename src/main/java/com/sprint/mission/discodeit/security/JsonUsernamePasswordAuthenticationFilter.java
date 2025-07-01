@@ -14,6 +14,8 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -57,6 +59,16 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
         HttpServletResponse response,
         FilterChain chain,
         Authentication authResult) throws IOException, ServletException {
+        log.info("[LOGIN] successfulAuthentication 시작");
+
+        // Remember-Me 작동
+        RememberMeServices rememberMeServices = getRememberMeServices();
+        if (rememberMeServices != null) {
+            rememberMeServices.loginSuccess(request, response, authResult);
+            log.info("[LOGIN] rememberMe 쿠키 발급 완료");
+        }
+
+        // 성공 핸들러 실행
         this.getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
     }
 
@@ -67,5 +79,12 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
         AuthenticationException failed)
         throws IOException, ServletException {
         getFailureHandler().onAuthenticationFailure(request, response, failed);
+    }
+
+    @Override
+    protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        log.info("요청 URI: {}", request.getRequestURI());
+        log.info("현재 SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
+        return super.requiresAuthentication(request, response);
     }
 }
