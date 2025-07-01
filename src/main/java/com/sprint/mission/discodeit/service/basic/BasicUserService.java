@@ -9,12 +9,10 @@ import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.RestException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.util.LogUtils;
@@ -37,7 +35,6 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
@@ -76,8 +73,6 @@ public class BasicUserService implements UserService {
         .build();
 
     userRepository.save(newUser);
-
-    userStatusRepository.save(new UserStatus(newUser, Instant.now()));
 
     // 성공 로그
     log.info("[CREATE] status=SUCCESS, userId={}, traceId={}",

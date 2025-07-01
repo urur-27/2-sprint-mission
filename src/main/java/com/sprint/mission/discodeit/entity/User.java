@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import lombok.AccessLevel;
@@ -44,8 +42,8 @@ public class User extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "fk_users_profile"))
   private BinaryContent profile;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus status;
+  @Column(name = "last_active_at")
+  private Instant lastActiveAt;
 
   @Builder
   public User(String username, String email, String password, BinaryContent profile, Role role) {
@@ -66,8 +64,9 @@ public class User extends BaseUpdatableEntity {
 
   // 마지막 활동 시간 반환 메서드
   public Instant getLastActiveAt() {
-    return status != null ? status.getLastActiveAt() : null;
+    return this.lastActiveAt;
   }
+
 
   public void setRole(Role role) {
     this.role = role;

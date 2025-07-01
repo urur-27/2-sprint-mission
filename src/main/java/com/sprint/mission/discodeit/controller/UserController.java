@@ -4,16 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.common.code.ResultCode;
 import com.sprint.mission.discodeit.dto2.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto2.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto2.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto2.response.UserResponse;
-import com.sprint.mission.discodeit.dto2.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.RestException;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import com.sprint.mission.discodeit.util.LogUtils;
 import jakarta.validation.Valid;
@@ -37,8 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
-  private final UserStatusMapper userStatusMapper;
   private final BasicBinaryContentService binaryContentService;
 
   // User 등록
@@ -141,27 +134,6 @@ public class UserController {
         responses.size(), traceId);
 
     return ResponseEntity.ok(responses);
-  }
-
-  // 온라인 상태 갱신
-  @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatusResponse> updateUserStatus(@PathVariable UUID userId,
-      @Valid @RequestBody UserStatusUpdateRequest request) {
-    String traceId = MDC.get("traceId");
-
-    // 시작 로그
-    log.info("[UPDATE_STATUS] status=START, userId={}, traceId={}",
-        log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
-
-    UserStatus updatedUserStatus = userStatusService.update(userId, request);
-    UserStatusResponse response = userStatusMapper.toResponse(updatedUserStatus);
-
-    log.info("[UPDATE_STATUS] User status updated successfully: userId={}, traceId={}",
-        LogUtils.maskUUID(userId), traceId);
-
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(response);
   }
 
 }
