@@ -20,6 +20,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer.SessionFixationConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -136,13 +137,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .sessionManagement(session -> session
-                .maximumSessions(1) // 최대 세션 1개로 고정. 세션 추적 간편화
-                .sessionRegistry(sessionRegistry())
-            )
-            .rememberMe(rememberMe -> rememberMe
-                .rememberMeServices(rememberMeServices)
-            )
+            .sessionManagement(session -> {
+                session
+                    .sessionFixation(SessionFixationConfigurer::migrateSession); // 세션 고정 보호
+                session
+                    .maximumSessions(1) // 최대 세션 1개로 고정.
+                    .sessionRegistry(sessionRegistry()); // 동시 세션 추적
+            })
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
