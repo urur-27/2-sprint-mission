@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto2.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto2.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto2.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.util.LogUtils;
 import jakarta.validation.Valid;
@@ -23,10 +25,11 @@ import java.util.UUID;
 public class ReadStatusController {
 
   private final ReadStatusService readStatusService;
+  private final ReadStatusMapper readStatusMapper;
 
   // 1. 특정 채널의 메시지 수신 정보 생성
   @PostMapping
-  public ResponseEntity<ReadStatus> createReceipts(
+  public ResponseEntity<ReadStatusResponse> createReceipts(
       @Valid @RequestBody ReadStatusCreateRequest request) {
     String traceId = MDC.get("traceId");
     UUID userId = request.userId();
@@ -44,12 +47,14 @@ public class ReadStatusController {
     log.info("[CREATE] status=SUCCESS, readStatusId={}, traceId={}",
         LogUtils.maskUUID(readStatus.getId()), traceId);
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
+
+//    return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
+    return ResponseEntity.status(HttpStatus.CREATED).body(readStatusMapper.toResponse(readStatus));
   }
 
   // 2. 특정 채널의 메시지 수신 정보 수정
   @PatchMapping("/{readStatusId}")
-  public ResponseEntity<ReadStatus> updateReceipts(
+  public ResponseEntity<ReadStatusResponse> updateReceipts(
       @PathVariable UUID readStatusId,
       @Valid @RequestBody ReadStatusUpdateRequest request) {
     String traceId = MDC.get("traceId");
@@ -64,12 +69,13 @@ public class ReadStatusController {
     log.info("[UPDATE] status=SUCCESS, readStatusId={}, traceId={}",
         LogUtils.maskUUID(updated.getId()), traceId);
 
-    return ResponseEntity.ok(updated);
+//    return ResponseEntity.ok(updated);
+    return ResponseEntity.ok(readStatusMapper.toResponse(updated));
   }
 
   // 3. 특정 사용자의 메시지 수신 정보 조회
   @GetMapping
-  public ResponseEntity<List<ReadStatus>> getAllByUserId(@RequestParam UUID userId) {
+  public ResponseEntity<List<ReadStatusResponse>> getAllByUserId(@RequestParam UUID userId) {
     String traceId = MDC.get("traceId");
 
     // 시작 로그
@@ -77,11 +83,16 @@ public class ReadStatusController {
         log.isDebugEnabled() ? userId : LogUtils.maskUUID(userId), traceId);
 
     List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusResponse> responses = readStatuses.stream()
+        .map(readStatusMapper::toResponse)
+        .toList();
+
 
     // 성공 로그
     log.info("[FIND_ALL] status=SUCCESS, userId={}, readStatusCount={}, traceId={}",
         LogUtils.maskUUID(userId), readStatuses.size(), traceId);
 
-    return ResponseEntity.ok(readStatuses);
+//    return ResponseEntity.ok(readStatuses);
+    return ResponseEntity.ok(responses);
   }
 }
