@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.CustomCsrfDebugFilter;
 import com.sprint.mission.discodeit.security.JsonLogoutFilter;
 import com.sprint.mission.discodeit.security.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.UserActivityFilter;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,11 +96,15 @@ public class SecurityConfig {
         JsonLogoutFilter logoutFilter,
         JsonUsernamePasswordAuthenticationFilter loginFilter,
         RememberMeAuthenticationFilter rememberMeAuthenticationFilter,
-        PersistentTokenBasedRememberMeServices rememberMeServices
+        PersistentTokenBasedRememberMeServices rememberMeServices,
+        UserRepository userRepository
+
     ) throws Exception {
 
         CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
         handler.setCsrfRequestAttributeName("_csrf");
+
+        UserActivityFilter userActivityFilter = new UserActivityFilter(userRepository);
 
         http
             .securityContext(context -> context
@@ -144,13 +150,17 @@ public class SecurityConfig {
                     .maximumSessions(1) // 최대 세션 1개로 고정.
                     .sessionRegistry(sessionRegistry()); // 동시 세션 추적
             })
+            .rememberMe(rememberMe -> rememberMe
+                .rememberMeServices(rememberMeServices)
+            )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             // login -> remember-me -> logout
             .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(rememberMeAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(logoutFilter, RememberMeAuthenticationFilter.class);
+            .addFilterAfter(logoutFilter, RememberMeAuthenticationFilter.class)
+            .addFilterAfter(userActivityFilter, RememberMeAuthenticationFilter.class);
 
         return http.build();
     }

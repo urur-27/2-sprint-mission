@@ -14,6 +14,9 @@ public enum ResultCode implements Code {
   USER_STATUS_ALREADY_EXISTS(400, "이미 사용자 상태가 존재합니다."),
   INVALID_CHANNEL_DATA(400, "채널명이 입력되지 않았습니다."),
 
+  // 401 Unauthorized
+  UNAUTHORIZED_USER(401, "로그인이 필요합니다."),
+
   // 403 Forbidden
   ACCESS_DENIED(403, "권한이 없습니다."),
 

@@ -62,11 +62,9 @@ public class User extends BaseUpdatableEntity {
     this.profile = profile;
   }
 
-  // 마지막 활동 시간 반환 메서드
-  public Instant getLastActiveAt() {
-    return this.lastActiveAt;
+  public void setLastActiveAt(Instant lastActiveAt) {
+    this.lastActiveAt = lastActiveAt;
   }
-
 
   public void setRole(Role role) {
     this.role = role;
