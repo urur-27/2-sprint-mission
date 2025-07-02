@@ -1,72 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.UniqueConstraint;
-import java.time.Instant;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @Entity
-@Table(name = "users", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"username"}),
-    @UniqueConstraint(columnNames = {"email"})
-})
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
 public class User extends BaseUpdatableEntity {
 
-  // 유저 이름과 이메일
-  @Column(nullable = false)
+  @Column(length = 50, nullable = false, unique = true)
   private String username;
-  @Column(nullable = false)
+  @Column(length = 100, nullable = false, unique = true)
   private String email;
-  @Column(nullable = false)
+  @Column(length = 60, nullable = false)
   private String password;
-
-  // 권한
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private Role role;
-
-  @ManyToOne
-  @JoinColumn(name = "profile_id", foreignKey = @ForeignKey(name = "fk_users_profile"))
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id", columnDefinition = "uuid")
   private BinaryContent profile;
+  @JsonManagedReference
+  @Setter(AccessLevel.PROTECTED)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
 
-  @Column(name = "last_active_at")
-  private Instant lastActiveAt;
-
-  @Builder
-  public User(String username, String email, String password, BinaryContent profile, Role role) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.profile = profile;
-    this.role = role;
-  }
-
-  // 업데이트 메서드
-  public void updateUser(String username, String email, String password, BinaryContent profile) {
+  public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.profile = profile;
   }
 
-  public void setLastActiveAt(Instant lastActiveAt) {
-    this.lastActiveAt = lastActiveAt;
-  }
-
-  public void setRole(Role role) {
-    this.role = role;
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
+    }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
+    }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+    }
+    if (newProfile != null) {
+      this.profile = newProfile;
+    }
   }
 }
