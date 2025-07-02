@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.common.DiscodeitConstants;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @Getter
+@Access(AccessType.FIELD)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
 public class User extends BaseUpdatableEntity {
 
@@ -70,10 +73,12 @@ public class User extends BaseUpdatableEntity {
     if (newPassword != null && !newPassword.equals(this.password)) {
       this.password = newPassword;
     }
+    if (newPassword != null) {
+      this.password = newPassword;
+    }
     if (newProfile != null) {
       this.profile = newProfile;
     }
-    this.updatedAt = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant();
   }
 
   public void setLastActiveAt(Instant lastActiveAt) {
