@@ -1,18 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sprint.mission.discodeit.common.DiscodeitConstants;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -29,16 +34,29 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "profile_id", columnDefinition = "uuid")
   private BinaryContent profile;
-  @JsonManagedReference
-  @Setter(AccessLevel.PROTECTED)
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus status;
+
+  // 권한
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
+
+  @Column(name = "last_active_at")
+  private Instant lastActiveAt;
 
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.profile = profile;
+  }
+
+  @Builder
+  public User(String username, String email, String password, BinaryContent profile, Role role) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+    this.role = role;
   }
 
   public void update(String newUsername, String newEmail, String newPassword,
@@ -55,5 +73,20 @@ public class User extends BaseUpdatableEntity {
     if (newProfile != null) {
       this.profile = newProfile;
     }
+    this.updatedAt = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant();
   }
+
+  public void setLastActiveAt(Instant lastActiveAt) {
+    this.lastActiveAt = lastActiveAt;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
+  }
+
+  public boolean isOnline() {
+    return this.lastActiveAt != null &&
+        this.lastActiveAt.isAfter(Instant.now().minusSeconds(DiscodeitConstants.ONLINE_THRESHOLD_SECONDS));
+  }
+
 }

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import jakarta.servlet.ServletException;
@@ -45,7 +45,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser(); // 실제 엔티티 꺼내기
 
-        UserResponse userResponse = userMapper.toResponse(user, true);
+        UserDto userResponse = userMapper.toDto(user);
 
         // 새로운 CSRF 토큰 강제로 생성 및 쿠키에 반영
         CsrfToken newToken = csrfTokenRepository.generateToken(request);

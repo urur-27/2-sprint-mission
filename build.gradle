@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+version = '2.0'
 
 java {
     toolchain {
@@ -47,6 +47,9 @@ dependencies {
 
     // AWS S3 SDK 의존성
     implementation 'software.amazon.awssdk:s3:2.31.7'
+
+    // Spring Security 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 }
 
 tasks.named('test') {

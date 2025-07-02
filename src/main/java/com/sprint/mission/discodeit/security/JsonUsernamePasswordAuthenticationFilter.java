@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto2.request.UserLoginRequest;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,7 +38,7 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
         log.info("[LOGIN] attemptAuthentication 시작");
         try{
             // JSON 요청 body를 loginRequest로 변환
-            UserLoginRequest loginReqeust = objectMapper.readValue(request.getInputStream(), UserLoginRequest.class);
+            LoginRequest loginReqeust = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
 
             // username, password를 이용한 인증 토큰 객체 생성
             UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(

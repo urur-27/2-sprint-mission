@@ -1,19 +1,19 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.code.ResultCode;
-import com.sprint.mission.discodeit.dto2.request.RoleUpdateRequest;
-import com.sprint.mission.discodeit.dto2.response.UserResponse;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.RestException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.SessionInvalidateManager;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
@@ -23,9 +23,9 @@ public class BasicAuthService implements AuthService {
 
     @Transactional
     @Override
-    public UserResponse updateUserRole(RoleUpdateRequest request){
+    public UserDto updateUserRole(RoleUpdateRequest request){
         User user = userRepository.findById(request.userId())
-            .orElseThrow(() -> new RestException(ResultCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new DiscodeitException(ErrorCode.USER_NOT_FOUND));
 
         user.setRole(request.newRole());
 
@@ -34,6 +34,6 @@ public class BasicAuthService implements AuthService {
         // 세션 무효화
         sessionInvalidateManager.invalidateIfPresent(user.getId());
 
-        return userMapper.toResponse(user, false);
+        return userMapper.toDto(user);
     }
 }
