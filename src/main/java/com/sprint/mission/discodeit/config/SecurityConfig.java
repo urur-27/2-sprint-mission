@@ -170,8 +170,8 @@ public class SecurityConfig {
     public CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookiePath("/");
-        repository.setCookieName("CSRF-TOKEN");
-        repository.setHeaderName("X-Csrf-Token");
+        repository.setCookieName("XSRF-TOKEN");
+        repository.setHeaderName("X-XSRF-Token");
         return repository;
     }
 
@@ -236,7 +236,6 @@ public class SecurityConfig {
     ) {
         return new RememberMeAuthenticationFilter(authenticationManager, rememberMeServices);
     }
-
 
 }
 
