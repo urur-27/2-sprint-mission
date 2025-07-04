@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.security.filter.JsonLogoutFilter;
 import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.filter.UserActivityFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtService;
 import javax.sql.DataSource;
@@ -99,7 +100,8 @@ public class SecurityConfig {
         JsonUsernamePasswordAuthenticationFilter loginFilter,
         RememberMeAuthenticationFilter rememberMeAuthenticationFilter,
         PersistentTokenBasedRememberMeServices rememberMeServices,
-        UserRepository userRepository
+        UserRepository userRepository,
+        JwtAuthenticationFilter jwtAuthenticationFilter
 
     ) throws Exception {
 
@@ -126,7 +128,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/csrf-token",
-                    "/api/users"
+                    "/api/users",
+                    "/api/auth/logout"
                 ).permitAll()
 
                 // 사용자 권한 수정은 ROLE_ADMIN만
@@ -159,7 +162,8 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             // login -> remember-me -> logout
-            .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
+            .addFilterAt(loginFilter, JsonUsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(rememberMeAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(logoutFilter, RememberMeAuthenticationFilter.class)
             .addFilterAfter(userActivityFilter, RememberMeAuthenticationFilter.class);

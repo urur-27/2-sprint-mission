@@ -1,22 +1,25 @@
 package com.sprint.mission.discodeit.security.jwt;
 
-
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.JwtSessionRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.CustomUserDetails;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import java.sql.Date;
+import java.util.Date;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,7 +50,7 @@ public class JwtService {
         String accessToken = Jwts.builder()
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(accessTokenExpiryMillis)))
-                .claim("userDto", userDto)
+                .claim("userId", userDto.id())
                 .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
 
@@ -78,6 +81,27 @@ public class JwtService {
                     .build() // parser 객체 생성
                     .parseClaimsJws(token); // 전달받은 JWT 파싱. 서명, 만료, 구조 등 모든 검증 수행
             return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // userId 값 까지 추가 검증
+    public boolean validateToken(String token, UserDetails userDetails) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(getSecretKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            // userId 비교
+            String tokenUserId = claims.get("userId", String.class);
+            CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+            boolean idMatches = tokenUserId.equals(customUserDetails.getUserId().toString());
+
+            boolean notExpired = claims.getExpiration().after(new Date());
+            return idMatches && notExpired;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
@@ -124,4 +148,13 @@ public class JwtService {
                 .ifPresent(jwtSessionRepository::delete);
     }
 
+    // accessToken에서 사용자 정보 추출
+    public UUID extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSecretKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return UUID.fromString(claims.get("userId", String.class));
+    }
 }
