@@ -3,12 +3,13 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.CustomCsrfDebugFilter;
-import com.sprint.mission.discodeit.security.JsonLogoutFilter;
-import com.sprint.mission.discodeit.security.JsonUsernamePasswordAuthenticationFilter;
+import com.sprint.mission.discodeit.security.filter.CustomCsrfDebugFilter;
+import com.sprint.mission.discodeit.security.filter.JsonLogoutFilter;
+import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
-import com.sprint.mission.discodeit.security.UserActivityFilter;
+import com.sprint.mission.discodeit.security.filter.UserActivityFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtService;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,8 @@ public class SecurityConfig {
         UserMapper userMapper,
         AuthenticationManager authenticationManager,
         CsrfTokenRepository csrfTokenRepository,
-        RememberMeServices rememberMeServices
+        RememberMeServices rememberMeServices,
+        JwtService jwtService
     ) {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
@@ -71,7 +73,7 @@ public class SecurityConfig {
         // 인증 성공시 SecurityContext를 저장할 장소 지정
         loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         // 인증 성공/실패 핸들러 지정
-        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(objectMapper, userMapper, csrfTokenRepository));
+        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(userMapper, csrfTokenRepository, jwtService));
         loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
         // 필터 처리 경로 설정
         loginFilter.setFilterProcessesUrl("/api/auth/login");

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;

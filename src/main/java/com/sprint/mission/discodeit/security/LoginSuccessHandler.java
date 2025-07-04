@@ -21,7 +21,6 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
-    private final ObjectMapper objectMapper;
     private final UserMapper userMapper;
     private final CsrfTokenRepository csrfTokenRepository;
     private final JwtService jwtService;
