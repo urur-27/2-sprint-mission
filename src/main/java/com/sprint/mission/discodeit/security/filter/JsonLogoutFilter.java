@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.security.filter;
 
+import com.sprint.mission.discodeit.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JsonLogoutFilter extends OncePerRequestFilter {
 
     private static final String LOGOUT_URI = "/api/auth/logout";
-    private final PersistentTokenBasedRememberMeServices rememberMeServices;
+    private final JwtService jwtService;
 
 
     @Override
@@ -33,41 +31,23 @@ public class JsonLogoutFilter extends OncePerRequestFilter {
             return;
         }
 
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate(); // 세션 무효화
-            log.info("Session invalidated for logout");
-        }
+        // 쿠키에서 refresh_token 추출
+        String refreshToken = extractRefreshTokenFromCookie(request);
 
-        // Remember-Me 쿠키 삭제
-        Cookie cookie = new Cookie("remember-me-cookie", null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 즉시 만료
-        response.addCookie(cookie);
-        log.info("Remember-Me cookie deleted");
+        if (refreshToken != null) {
+            // JwtService를 통해 리프레시 토큰 무효화
+            jwtService.invalidateSession(refreshToken);
+            log.info("Refresh token invalidated: {}", refreshToken);
 
-        // Remember-Me DB 토큰 삭제
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("auth = {}", auth);
-
-        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            String username = auth.getName();
-            rememberMeServices.logout(request, response, auth);
-            log.info("Remember-Me DB token deleted for user: {}", username);
+            // 쿠키 삭제 (클라이언트의 refresh_token 쿠키 만료)
+            Cookie cookie = new Cookie("refresh_token", null);
+            cookie.setPath("/");
+//            cookie.setHttpOnly(true);
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
         } else {
-            log.warn("Authentication not found or invalid during logout.");
+            log.warn("No refresh token found in cookie during logout.");
         }
-
-        // CSRF 및 JSESSIONID 쿠키 삭제
-        Cookie csrfCookie = new Cookie("CSRF-TOKEN", "");
-        csrfCookie.setMaxAge(0);
-        csrfCookie.setPath("/");
-        response.addCookie(csrfCookie);
-
-        Cookie sessionCookie = new Cookie("JSESSIONID", "");
-        sessionCookie.setMaxAge(0);
-        sessionCookie.setPath("/");
-        response.addCookie(sessionCookie);
 
         SecurityContextHolder.clearContext(); // SecurityContext 초기화
         log.info("SecurityContext cleared for logout");
@@ -78,5 +58,16 @@ public class JsonLogoutFilter extends OncePerRequestFilter {
     private boolean isLogoutRequest(HttpServletRequest request) {
         return "POST".equalsIgnoreCase(request.getMethod())
             && LOGOUT_URI.equals(request.getRequestURI());
+    }
+
+    // 쿠키에서 토큰을 추출하는 메서드
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("refresh_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

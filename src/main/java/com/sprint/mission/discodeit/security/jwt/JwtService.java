@@ -10,12 +10,14 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
 import java.util.Date;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ public class JwtService {
     }
 
     // 토큰 생성 후 세션에 저장
+    @Transactional
     public JwtSession createSession(UserDto userDto) {
         Instant now = Instant.now();
 
@@ -108,6 +111,7 @@ public class JwtService {
     }
 
     // 리프레시 토큰으로 엑세스 토큰 재발급 + 리프레시 토큰 Rotation
+    @Transactional
     public Optional<JwtSession> rotateRefreshToken(String refreshToken) {
         // JwtSession 테이블에서 해당 리프레시 토큰이 있는지 조회
         Optional<JwtSession> sessionOpt = jwtSessionRepository.findByRefreshToken(refreshToken);
@@ -143,12 +147,14 @@ public class JwtService {
     }
 
     // 리프레시 토큰 무효화(세션 삭제)
+    @Transactional
     public void invalidateSession(String refreshToken) {
         jwtSessionRepository.findByRefreshToken(refreshToken)
                 .ifPresent(jwtSessionRepository::delete);
     }
 
     // accessToken에서 사용자 정보 추출
+    @Transactional
     public UUID extractUserId(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(getSecretKey())
