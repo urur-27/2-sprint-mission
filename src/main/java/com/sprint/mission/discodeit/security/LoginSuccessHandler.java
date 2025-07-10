@@ -9,12 +9,16 @@ import com.sprint.mission.discodeit.security.jwt.JwtSession;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
@@ -24,14 +28,22 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserMapper userMapper;
     private final CsrfTokenRepository csrfTokenRepository;
     private final JwtService jwtService;
-
-    @Value("${jwt.refresh-token-expiry}")
-    private long refreshTokenExpiryMillis;
+    private final ObjectMapper objectMapper;
+    private final long refreshTokenExpiryMillis;
 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
+        // SecurityContext에 인증 정보 저장
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // 세션에도 저장 (세션 기반 인증 유지)
+        HttpSession session = request.getSession(true);
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+
 
         log.debug("authentication principal class: {}", authentication.getPrincipal().getClass());
 
@@ -42,14 +54,18 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         // JwtSession 생성 (DB 저장 & 액세스 토큰, 리프레시 토큰 생성)
         JwtSession jwtSession = jwtService.createSession(userDto);
 
+        String accessToken = jwtSession.getAccessToken();
+        log.debug("[LOGIN] accessToken = {}", accessToken);
+
         // 액세스 토큰을 응답 바디에 문자열로 반환
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/plain;charset=UTF-8");
-        response.getWriter().write(jwtSession.getAccessToken());
+        response.getWriter().write(accessToken);
 
         // 리프레시 토큰을 쿠키로 반환
         String refreshToken = jwtSession.getRefreshToken();
         int maxAge = (int) (refreshTokenExpiryMillis / 1000);
+        log.info("[쿠키 maxAge 확인] refreshTokenExpiryMillis: {}, maxAge: {}", refreshTokenExpiryMillis, maxAge);
         StringBuilder cookieStr = new StringBuilder();
         cookieStr.append("refresh_token=").append(refreshToken)
                 .append("; Path=/")

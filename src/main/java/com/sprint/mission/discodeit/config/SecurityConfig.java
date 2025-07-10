@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.security.jwt.JwtService;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -32,7 +33,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -51,8 +51,8 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public JsonLogoutFilter jsonLogoutFilter(PersistentTokenBasedRememberMeServices rememberMeServices) {
-        return new JsonLogoutFilter(rememberMeServices);
+    public JsonLogoutFilter jsonLogoutFilter(JwtService jwtService) {
+        return new JsonLogoutFilter(jwtService);
     }
 
     @Bean
@@ -61,20 +61,18 @@ public class SecurityConfig {
         UserMapper userMapper,
         AuthenticationManager authenticationManager,
         CsrfTokenRepository csrfTokenRepository,
-        RememberMeServices rememberMeServices,
-        JwtService jwtService
+        JwtService jwtService,
+        LoginSuccessHandler loginSuccessHandler
     ) {
         // 로그인 요청 파싱해서 커스텀 필터 객체 생성
         JsonUsernamePasswordAuthenticationFilter loginFilter =
             new JsonUsernamePasswordAuthenticationFilter(objectMapper);
         // 인증을 위임할 매니저 생성
         loginFilter.setAuthenticationManager(authenticationManager);
-        // RememberMeService 지정
-        loginFilter.setRememberMeServices(rememberMeServices);
         // 인증 성공시 SecurityContext를 저장할 장소 지정
         loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         // 인증 성공/실패 핸들러 지정
-        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(userMapper, csrfTokenRepository, jwtService));
+        loginFilter.setAuthenticationSuccessHandler(loginSuccessHandler);
         loginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
         // 필터 처리 경로 설정
         loginFilter.setFilterProcessesUrl("/api/auth/login");
@@ -98,8 +96,6 @@ public class SecurityConfig {
         HttpSecurity http,
         JsonLogoutFilter logoutFilter,
         JsonUsernamePasswordAuthenticationFilter loginFilter,
-        RememberMeAuthenticationFilter rememberMeAuthenticationFilter,
-        PersistentTokenBasedRememberMeServices rememberMeServices,
         UserRepository userRepository,
         JwtAuthenticationFilter jwtAuthenticationFilter
 
@@ -155,16 +151,12 @@ public class SecurityConfig {
                     .maximumSessions(1) // 최대 세션 1개로 고정.
                     .sessionRegistry(sessionRegistry()); // 동시 세션 추적
             })
-            .rememberMe(rememberMe -> rememberMe
-                .rememberMeServices(rememberMeServices)
-            )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             // login -> remember-me -> logout
             .addFilterBefore(jwtAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
             .addFilterAt(loginFilter, JsonUsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(rememberMeAuthenticationFilter, JsonUsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(logoutFilter, RememberMeAuthenticationFilter.class)
             .addFilterAfter(userActivityFilter, RememberMeAuthenticationFilter.class);
 
@@ -243,6 +235,16 @@ public class SecurityConfig {
         return new RememberMeAuthenticationFilter(authenticationManager, rememberMeServices);
     }
 
+    @Bean
+    public LoginSuccessHandler loginSuccessHandler(
+            UserMapper userMapper,
+            CsrfTokenRepository csrfTokenRepository,
+            JwtService jwtService,
+            ObjectMapper objectMapper,
+            @Value("${jwt.refresh-token-expiry}") long refreshTokenExpiryMillis
+    ) {
+        return new LoginSuccessHandler(userMapper, csrfTokenRepository, jwtService, objectMapper, refreshTokenExpiryMillis);
+    }
 }
 
 
