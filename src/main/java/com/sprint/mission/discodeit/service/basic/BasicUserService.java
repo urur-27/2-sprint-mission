@@ -5,14 +5,13 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
 
   @Transactional
   @Override
@@ -63,11 +63,12 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
-    String password = userCreateRequest.password();
 
-    User user = new User(username, email, password, nullableProfile);
+    // 패스워드 인코딩
+    String password = passwordEncoder.encode(userCreateRequest.password());
+
+    User user = new User(username, email, password, nullableProfile, Role.ROLE_USER);
     Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(user, now);
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
@@ -87,7 +88,7 @@ public class BasicUserService implements UserService {
   @Override
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
-    List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
+    List<UserDto> userDtos = userRepository.findAllWithProfile()
         .stream()
         .map(userMapper::toDto)
         .toList();
@@ -133,6 +134,12 @@ public class BasicUserService implements UserService {
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
+    if (newPassword != null && !newPassword.isBlank()) {
+        newPassword = passwordEncoder.encode(newPassword);
+    } else {
+        newPassword = user.getPassword(); // 기존 암호 그대로 유지
+    }
+
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
