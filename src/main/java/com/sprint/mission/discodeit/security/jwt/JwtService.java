@@ -54,6 +54,7 @@ public class JwtService {
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(accessTokenExpiryMillis)))
                 .claim("userId", userDto.id())
+                .claim("userDto", userDto)
                 .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
 
