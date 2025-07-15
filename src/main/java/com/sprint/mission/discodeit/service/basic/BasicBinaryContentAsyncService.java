@@ -3,13 +3,15 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.AsyncTaskFailure;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentUploadStatus;
+import com.sprint.mission.discodeit.entity.NotificationType;
+import com.sprint.mission.discodeit.event.NotificationEvent;
+import com.sprint.mission.discodeit.event.NotificationEventPublisher;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.AsyncTaskFailureRepository;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentAsyncService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import io.micrometer.core.annotation.Timed;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class BasicBinaryContentAsyncService implements BinaryContentAsyncService
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final AsyncTaskFailureRepository asyncTaskFailureRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Override
     @Async("contextAwareTaskExecutor")
@@ -57,11 +60,22 @@ public class BasicBinaryContentAsyncService implements BinaryContentAsyncService
     // 재시도 모두 실패 시 실행되는 복구 메서드 (@Recover)
     @Recover
     public void recover(RuntimeException e, UUID binaryContentId, byte[] bytes) {
+
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElse(null);
 
         if (binaryContent != null) {
             binaryContent.setUploadStatus(BinaryContentUploadStatus.FAILED);
+
+            UUID userId = binaryContent.getUploader().getId();
+
+            notificationEventPublisher.publish(new NotificationEvent(
+                    userId,
+                    "파일 업로드 실패",
+                    "파일 업로드에 실패했어요. 다시 시도해주세요.",
+                    NotificationType.ASYNC_FAILED,
+                    null
+            ));
         }
 
         // MDC의 RequestId 포함하여 실패 정보 기록

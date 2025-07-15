@@ -9,7 +9,11 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentUploadStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.NotificationType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.NotificationEvent;
+import com.sprint.mission.discodeit.event.NotificationEventPublisher;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -18,6 +22,7 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentAsyncService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -46,6 +51,8 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final PageResponseMapper pageResponseMapper;
   private final BinaryContentAsyncService binaryContentAsyncService;
+  private final ReadStatusRepository readStatusRepository;
+  private final NotificationEventPublisher notificationEventPublisher;
 
   @Transactional
   @Override
@@ -85,6 +92,21 @@ public class BasicMessageService implements MessageService {
 
     messageRepository.save(message);
     log.info("메시지 생성 완료: id={}, channelId={}", message.getId(), channelId);
+
+    // 알림 이벤트 발생
+    List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
+    for (ReadStatus rs : readStatuses) {
+      if (rs.isNotificationEnabled() && !rs.getUser().getId().equals(authorId)) {
+        notificationEventPublisher.publish(new NotificationEvent(
+                rs.getUser().getId(),
+                "새 메시지가 도착했어요",
+                channel.getName() + " 채널에 새 메시지가 등록되었습니다.",
+                NotificationType.NEW_MESSAGE,
+                channelId
+        ));
+      }
+    }
+
     return messageMapper.toDto(message);
   }
 
