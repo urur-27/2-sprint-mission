@@ -12,6 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
   app:
     build:
       context: .
@@ -19,16 +20,33 @@ services:
     image: discodeit:local
     container_name: discodeit-app
     ports:
-      - "8081:80"
+      - "8080:8080"
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev # dev/prod. 실제 배포 시는 prod로 변경
     volumes:
       - ./storage:/app/.discodeit/storage
     depends_on:
       - postgres
 
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
 volumes:
   postgres_data:
-
+  grafana-storage:

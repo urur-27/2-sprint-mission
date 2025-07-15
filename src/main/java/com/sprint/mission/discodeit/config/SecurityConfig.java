@@ -125,7 +125,8 @@ public class SecurityConfig {
                     "/api/auth/login",
                     "/api/auth/csrf-token",
                     "/api/users",
-                    "/api/auth/logout"
+                    "/api/auth/logout",
+                    "/actuator/**"
                 ).permitAll()
 
                 // 사용자 권한 수정은 ROLE_ADMIN만
