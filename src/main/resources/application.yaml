@@ -8,12 +8,20 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
   jpa:
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
     hibernate:
       ddl-auto: update
     open-in-view: false
+
   profiles:
     active:
       - dev # dev | prod
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
 
 management:
   endpoints:
@@ -59,6 +67,8 @@ discodeit:
 logging:
   level:
     root: info
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql: trace
 
 jwt:
   secret: "your-local-dev-secret-should-be-long-and-random"

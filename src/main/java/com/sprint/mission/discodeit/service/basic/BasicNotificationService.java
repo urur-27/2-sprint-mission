@@ -12,6 +12,8 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationMapper notificationMapper;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "userChannels", key = "#userId")
     public List<NotificationDto> getNotificationsForUser(UUID userId){
         return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(userId).stream()
                 .map(notificationMapper::toDto)
@@ -43,6 +46,7 @@ public class BasicNotificationService implements NotificationService {
 
     // 알림 발행
     @Transactional
+    @CacheEvict(value = "userNotifications", key = "#receiver.getId()")
     public void sendNotification(User receiver, String title, String content, NotificationType type, UUID targetId) {
         Notification notification = new Notification(receiver, title, content, type, targetId);
         notificationRepository.save(notification);
