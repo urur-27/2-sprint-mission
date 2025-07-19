@@ -6,4 +6,6 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 public interface AuthService {
 
     UserDto updateUserRole(RoleUpdateRequest request);
+
+    String getAccessTokenByRefreshToken(String refreshToken);
 }

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.filter;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,11 @@ public class UserActivityFilter extends OncePerRequestFilter {
         // 로그인이 되어 있으면 활동시간 갱신
         if (AuthUtils.isLoggedIn()) {
             User user = AuthUtils.getCurrentUser();
-            user.setLastActiveAt(Instant.now());
-            userRepository.save(user);
+            Instant now = Instant.now();
+            if (user.getLastActiveAt() == null || Duration.between(user.getLastActiveAt(), now).toMinutes() >= 1) {
+                user.setLastActiveAt(now);
+                userRepository.save(user);
+            }
         }
 
         filterChain.doFilter(request, response);
